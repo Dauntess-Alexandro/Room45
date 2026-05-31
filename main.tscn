@@ -1,6 +1,7 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="PackedScene" path="res://player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://pause_menu.tscn" id="9_pause"]
 [ext_resource type="Script" path="res://interactable.gd" id="2_inter"]
 [ext_resource type="Script" path="res://furniture.gd" id="3_furn"]
 [ext_resource type="Texture2D" path="res://tex_wallpaper.jpg" id="4_wall"]
@@ -219,9 +220,9 @@ material_override = SubResource("SwitchMat")
 [node name="Collision" type="CollisionShape3D" parent="Interactables/LightSwitch"]
 shape = SubResource("SwitchShape")
 
-; c) PICKUP — small glowing cube on the desk.
+; c) PICKUP — test cube on the shelf (not on the desk).
 [node name="Pickup" type="StaticBody3D" parent="Interactables"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.85, 0.86, -1.35)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.02, 0.95, 0.35)
 script = ExtResource("2_inter")
 kind = 2
 prompt_text = "PICK UP"
@@ -344,3 +345,5 @@ theme_override_font_sizes/font_size = 18
 text = "[E]  INTERACT"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="PauseMenu" parent="UI" instance=ExtResource("9_pause")]

@@ -18,12 +18,14 @@ config/name="Room45 - VotV Style"
 run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 
+[autoload]
+
+DisplaySettings="*res://display_settings.gd"
+
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
-window/size/window_width_override=1920
-window/size/window_height_override=1080
 window/stretch/mode="viewport"
 window/stretch/aspect="expand"
 

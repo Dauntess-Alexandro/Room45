@@ -14,6 +14,15 @@ extends Node3D
 const HALF_W := 1.31   # +/- X (walls)
 const HALF_L := 2.30   # +/- Z (walls)
 
+## Drop an exported .glb here (see models/README.txt) to replace the blocky placeholder.
+const SOFA_GLB := "res://models/sofa.glb"
+## Real-world size for the imported sofa (depth X, height Y, length Z).
+const SOFA_TARGET_SIZE := Vector3(1.10, 0.95, 2.35)
+const SOFA_CENTER_Z := -0.55
+const SOFA_WALL_GAP := 0.04
+
+const SCREEN_SIZE := Vector2(0.46, 0.30)
+
 var _mats := {}
 
 
@@ -21,7 +30,6 @@ func _ready() -> void:
 	_build_materials()
 	_build_rug()
 	_build_desk()
-	_build_chair()
 	_build_shelf()
 	_build_wardrobe()
 	_build_sofa()
@@ -34,13 +42,13 @@ func _ready() -> void:
 # =============================================================================
 # Material helpers
 # =============================================================================
-func _tex(path: String, scale := Vector3.ONE, rough := 1.0) -> StandardMaterial3D:
+func _tex(path: String, uv_scale := Vector3.ONE, rough := 1.0) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
 	m.albedo_texture = load(path)
 	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR    # soft retro, not crunchy nearest
 	m.roughness = rough
 	m.metallic = 0.0
-	m.uv1_scale = scale
+	m.uv1_scale = uv_scale
 	return m
 
 
@@ -72,11 +80,18 @@ func _build_materials() -> void:
 	tulle.albedo_color = Color(1, 1, 1, 0.55)
 	_mats["tulle"] = tulle
 
-	# Monitor screen: lightly self-lit so it reads like a glowing display.
-	var screen := _tex("res://tex_monitor.jpg")
+	# Glowing monitor display (Windows desktop) — opaque, unshaded, no see-through.
+	var screen := StandardMaterial3D.new()
+	screen.albedo_texture = load("res://tex_monitor.jpg")
+	screen.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
+	screen.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	screen.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
+	screen.cull_mode = BaseMaterial3D.CULL_DISABLED
 	screen.emission_enabled = true
 	screen.emission_texture = load("res://tex_monitor.jpg")
-	screen.emission_energy_multiplier = 0.5
+	screen.emission = Color(1, 1, 1, 1)
+	screen.emission_energy_multiplier = 2.0
+	screen.render_priority = 10
 	_mats["screen"] = screen
 
 	# Window daylight panel: bright unshaded.
@@ -142,7 +157,7 @@ func _sphere(parent: Node3D, radius: float, pos: Vector3, mat: Material, nm := "
 
 
 ## A flat textured quad (wall art). Faces +Z by default; pass rotation in degrees.
-func _decal(parent: Node3D, path: String, size: Vector2, pos: Vector3, rot_deg: Vector3, nm := "Decal") -> MeshInstance3D:
+func _decal(parent: Node3D, path: String, size: Vector2, pos: Vector3, rot_deg: Vector3, nm := "Decal", soft_alpha := false) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	var qm := QuadMesh.new()
 	qm.size = size
@@ -150,8 +165,12 @@ func _decal(parent: Node3D, path: String, size: Vector2, pos: Vector3, rot_deg: 
 	var m := StandardMaterial3D.new()
 	m.albedo_texture = load(path)
 	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
-	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
-	m.alpha_scissor_threshold = 0.5
+	if soft_alpha:
+		# Smooth edges for photo decals (scissor eats semi-transparent pixels).
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	else:
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+		m.alpha_scissor_threshold = 0.5
 	m.cull_mode = BaseMaterial3D.CULL_DISABLED
 	m.roughness = 0.9
 	mi.material_override = m
@@ -212,27 +231,22 @@ func _build_desk() -> void:
 
 
 func _build_monitors(parent: Node3D, cx: float, cz: float) -> void:
-	# Two monitors on the desk, screens facing -X (toward the chair).
-	for mz in [cz - 0.35, cz + 0.30]:
-		var px := cx + 0.16
-		# Stand + bezel.
-		_box(parent, Vector3(0.04, 0.04, 0.18), Vector3(px, 0.78, mz), _mats["metal"], "MonStand")
-		_box(parent, Vector3(0.03, 0.34, 0.5), Vector3(px, 1.0, mz), _mats["metal"], "MonBezel")
-		# Glowing screen quad on the -X face (emissive screen material).
-		var scr := _decal(parent, "res://tex_monitor.jpg", Vector2(0.46, 0.30), Vector3(px - 0.02, 1.0, mz), Vector3(0, -90, 0), "Screen")
+	# Blocky CRT + glowing desktop (no GLB until the model is sorted out).
+	var px := cx - 0.16   # room-facing edge of the east-wall desk
+	var mon_z: Array[float] = [-0.35, 0.30]
+	for i in mon_z.size():
+		var mz: float = cz + mon_z[i]
+		_box(parent, Vector3(0.04, 0.04, 0.18), Vector3(px, 0.78, mz), _mats["metal"], "Stand%d" % i)
+		_box(parent, Vector3(0.03, 0.34, 0.5), Vector3(px, 1.0, mz), _mats["metal"], "Bezel%d" % i)
+		var scr := MeshInstance3D.new()
+		scr.name = "Screen%d" % i
+		var qm := QuadMesh.new()
+		qm.size = SCREEN_SIZE
+		scr.mesh = qm
 		scr.material_override = _mats["screen"]
-
-
-func _build_chair() -> void:
-	var chair := Node3D.new()
-	chair.name = "Chair"
-	add_child(chair)
-	var cx := 0.55
-	var cz := -1.05
-	_box(chair, Vector3(0.45, 0.08, 0.45), Vector3(cx, 0.5, cz), _mats["chair"], "Seat")
-	_box(chair, Vector3(0.08, 0.5, 0.45), Vector3(cx + 0.20, 0.78, cz), _mats["chair"], "Back")
-	_cyl(chair, 0.035, 0.42, Vector3(cx, 0.27, cz), _mats["metal"], "Post")
-	_cyl(chair, 0.26, 0.04, Vector3(cx, 0.06, cz), _mats["metal"], "Base")
+		scr.position = Vector3(px - 0.022, 1.0, mz)
+		scr.rotation_degrees = Vector3(0, 90, 0)
+		parent.add_child(scr)
 
 
 func _build_shelf() -> void:
@@ -273,32 +287,124 @@ func _build_wardrobe() -> void:
 
 
 func _build_sofa() -> void:
-	# Blue day-bed / sofa, west wall.
+	if ResourceLoader.exists(SOFA_GLB):
+		_build_sofa_from_glb()
+		return
+	_build_sofa_placeholder()
+
+
+func _aabb_corners(aabb: AABB) -> Array[Vector3]:
+	var p := aabb.position
+	var e := p + aabb.size
+	return [
+		Vector3(p.x, p.y, p.z), Vector3(e.x, p.y, p.z),
+		Vector3(p.x, e.y, p.z), Vector3(e.x, e.y, p.z),
+		Vector3(p.x, p.y, e.z), Vector3(e.x, p.y, e.z),
+		Vector3(p.x, e.y, e.z), Vector3(e.x, e.y, e.z),
+	]
+
+
+## Axis-aligned bounds of all meshes under `root`, in `space` node's local coordinates.
+func _mesh_aabb_in_space(root: Node3D, space: Node3D) -> AABB:
+	var inv := space.global_transform.affine_inverse()
+	var box := AABB()
+	var has := false
+	for mi: MeshInstance3D in root.find_children("*", "MeshInstance3D", true, false):
+		if mi.mesh == null:
+			continue
+		for corner in _aabb_corners(mi.mesh.get_aabb()):
+			var p: Vector3 = inv * mi.global_transform * corner
+			if not has:
+				box = AABB(p, Vector3.ZERO)
+				has = true
+			else:
+				box = box.expand(p)
+	if not has:
+		return AABB(Vector3.ZERO, Vector3.ONE)
+	return box
+
+
+func _pick_sofa_y_rotation(s: Node3D) -> float:
+	# Long edge should run along room Z (parallel to the west wall).
+	var best_deg := 0.0
+	var best_len := 0.0
+	for deg in [0.0, 90.0, -90.0, 180.0]:
+		s.rotation_degrees = Vector3(0.0, deg, 0.0)
+		var box := _mesh_aabb_in_space(s, self)
+		if box.size.z > best_len:
+			best_len = box.size.z
+			best_deg = deg
+	return best_deg
+
+
+func _build_sofa_from_glb() -> void:
+	var s: Node3D = (load(SOFA_GLB) as PackedScene).instantiate()
+	s.name = "Sofa"
+	add_child(s)
+	call_deferred("_finalize_sofa_glb")
+
+
+func _finalize_sofa_glb() -> void:
+	var s: Node3D = get_node_or_null("Sofa") as Node3D
+	if s == null:
+		return
+	s.rotation_degrees = Vector3(0.0, _pick_sofa_y_rotation(s), 0.0)
+	var box := _mesh_aabb_in_space(s, self)
+	var sc := Vector3(
+		SOFA_TARGET_SIZE.x / maxf(box.size.x, 0.001),
+		SOFA_TARGET_SIZE.y / maxf(box.size.y, 0.001),
+		SOFA_TARGET_SIZE.z / maxf(box.size.z, 0.001),
+	)
+	s.scale = sc
+	box = _mesh_aabb_in_space(s, self)
+	var wall_x := -HALF_W + SOFA_WALL_GAP
+	s.position = Vector3(
+		wall_x - box.position.x,
+		-box.position.y,
+		SOFA_CENTER_Z - (box.position.z + box.size.z * 0.5),
+	)
+	_collider(s, box.size, box.get_center(), "SofaBody")
+
+
+func _build_sofa_placeholder() -> void:
+	# Fallback until res://models/sofa.glb exists.
 	var s := Node3D.new()
 	s.name = "Sofa"
 	add_child(s)
-	var cx := -HALF_W + 0.45
+	var cx := -HALF_W + 0.44
 	var cz := -0.55
-	_box(s, Vector3(0.85, 0.35, 1.95), Vector3(cx, 0.175, cz), _mats["sofa_beige"], "Base")
-	_box(s, Vector3(0.8, 0.16, 1.9), Vector3(cx, 0.43, cz), _mats["sofa_navy"], "Seat")
-	_box(s, Vector3(0.18, 0.55, 1.95), Vector3(cx - 0.33, 0.6, cz), _mats["sofa_navy"], "Back")
-	# Arms at both ends.
-	for az in [cz - 0.9, cz + 0.9]:
-		_box(s, Vector3(0.85, 0.45, 0.16), Vector3(cx, 0.33, az), _mats["sofa_beige"], "Arm")
-	# Accent pillow.
-	_box(s, Vector3(0.5, 0.18, 0.42), Vector3(cx, 0.62, cz + 0.6), _mats["pillow"], "Pillow")
-	_collider(s, Vector3(0.85, 0.6, 1.95), Vector3(cx, 0.3, cz), "SofaBody")
+	var beige: Material = _mats["sofa_beige"]
+	var navy: Material = _mats["sofa_navy"]
+	# Pull-out base slab.
+	_box(s, Vector3(0.74, 0.22, 1.90), Vector3(cx, 0.11, cz), beige, "Base")
+	# Back rest against the wall.
+	_box(s, Vector3(0.12, 0.40, 1.72), Vector3(cx - 0.31, 0.37, cz), beige, "Back")
+	# Seat cushion (flush with base — reads as one piece).
+	_box(s, Vector3(0.62, 0.14, 1.38), Vector3(cx + 0.02, 0.30, cz), beige, "Seat")
+	# Rounded end caps (barrels along Z, low-poly).
+	for z in [cz - 0.80, cz + 0.80]:
+		var end_cap := _cyl(s, 0.19, 0.68, Vector3(cx + 0.04, 0.34, z), beige, "EndCap")
+		end_cap.rotation_degrees = Vector3(90, 0, 0)
+	# Navy throw — single layer on top.
+	_box(s, Vector3(0.64, 0.07, 1.50), Vector3(cx + 0.02, 0.43, cz), navy, "Blanket")
+	# Teal pillow by the window end.
+	_box(s, Vector3(0.44, 0.14, 0.34), Vector3(cx + 0.02, 0.50, cz - 0.55), _mats["pillow"], "Pillow")
+	# Chrome legs.
+	for lx in [cx - 0.26, cx + 0.04]:
+		for lz in [cz - 0.78, cz + 0.78]:
+			_cyl(s, 0.025, 0.09, Vector3(lx, 0.045, lz), _mats["chrome"], "Leg")
+	_collider(s, Vector3(0.76, 0.52, 1.90), Vector3(cx, 0.26, cz), "SofaBody")
 
 
 func _build_pullup_bar() -> void:
-	# Black wall-mounted pull-up bar above the sofa (west wall).
+	# Pull-up bar above the wardrobe end of the west wall (not over the sofa).
 	var bar := Node3D.new()
 	bar.name = "PullUpBar"
 	add_child(bar)
 	var wall_x := -HALF_W + 0.01
-	for bz in [-1.2, 0.0]:
-		_box(bar, Vector3(0.28, 0.04, 0.04), Vector3(wall_x + 0.14, 2.0, bz), _mats["metal"], "Bracket")
-	_rod(bar, Vector3(wall_x + 0.26, 2.0, -1.25), Vector3(wall_x + 0.26, 2.0, 0.05), 0.025, _mats["metal"], "Bar")
+	for bz in [0.75, 1.45]:
+		_box(bar, Vector3(0.28, 0.04, 0.04), Vector3(wall_x + 0.14, 2.38, bz), _mats["metal"], "Bracket")
+	_rod(bar, Vector3(wall_x + 0.26, 2.38, 0.55), Vector3(wall_x + 0.26, 2.38, 1.65), 0.025, _mats["metal"], "Bar")
 
 
 func _build_window() -> void:
@@ -339,4 +445,4 @@ func _build_decals() -> void:
 	var x := HALF_W - 0.015
 	_decal(self, "res://decal_worldmap.png", Vector2(1.6, 0.95), Vector3(x, 1.78, -0.7), Vector3(0, -90, 0), "WorldMap")
 	_decal(self, "res://decal_clock.png", Vector2(0.4, 0.4), Vector3(x, 1.95, 0.78), Vector3(0, -90, 0), "Clock")
-	_decal(self, "res://decal_frames.png", Vector2(0.62, 0.5), Vector3(x, 1.68, 1.35), Vector3(0, -90, 0), "Frames")
+	_decal(self, "res://decal_frames.png", Vector2(0.35, 0.42), Vector3(x, 1.68, 1.35), Vector3(0, -90, 0), "Portrait", true)
