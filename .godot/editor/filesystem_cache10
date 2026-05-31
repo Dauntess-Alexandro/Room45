@@ -1,0 +1,36 @@
+63f7b34db8d8cdea90c76aacccf841ec
+::res://::1780246986
+3de03860-72ae-49ff-b72c-cfab3d34259e.jpg::CompressedTexture2D::8655521685557875540::1780241901::1780243382::1::::<><><>0<>0<>a6b73d5b22049b86c3711dbcc0f5981b<>res://.godot/imported/3de03860-72ae-49ff-b72c-cfab3d34259e.jpg-2d54a07e70934bd35678824ec2a98675.s3tc.ctex::
+518e0eef-751e-4476-8534-a124c8098d56.jpg::CompressedTexture2D::6711874205978137058::1780241905::1780243382::1::::<><><>0<>0<>cae05d8aa334445d13b5d73e1d48df5f<>res://.godot/imported/518e0eef-751e-4476-8534-a124c8098d56.jpg-3acee061027b216c01216663efab65c1.s3tc.ctex::
+decal_clock.png::CompressedTexture2D::6466067914760792668::1780245985::1780246803::1::::<><><>0<>0<>4f57157da7d940a4a5029c859b52c7c5<>res://.godot/imported/decal_clock.png-e1d6229b34fd5391218e58b934d51fd2.ctex::
+decal_door.png::CompressedTexture2D::7895971113665902832::1780245985::1780246806::1::::<><><>0<>0<>e12ae9d1ebfdeba63b9041421871afd4<>res://.godot/imported/decal_door.png-2effff0134e943aefe076184df6972bb.s3tc.ctex::
+decal_frames.png::CompressedTexture2D::7763364869486054498::1780245985::1780246803::1::::<><><>0<>0<>f9deb7222088b9aeb432817efcbb1e2e<>res://.godot/imported/decal_frames.png-50797ccc0c0d98d6f281538e03ed59fd.ctex::
+decal_worldmap.png::CompressedTexture2D::2189820224379363494::1780245985::1780246803::1::::<><><>0<>0<>55ceb5b5ad55e67d6b82e7b09c87879e<>res://.godot/imported/decal_worldmap.png-ea7326783b22a60eaf4526ffd75b909b.ctex::
+furniture.gd::GDScript::6271060242715296044::1780246661::0::1::::<>Node3D<><>0<>0<><>::
+interactable.gd::GDScript::7780189254064628060::1780242709::0::1::::Interactable<>StaticBody3D<><>0<>0<><>::
+main.tscn::PackedScene::-1::1780246682::0::1::::<><><>0<>0<><>::res://player.tscn<>res://interactable.gd<>res://furniture.gd<>res://tex_wallpaper.jpg<>res://tex_floor.jpg<>res://tex_ceiling.jpg<>res://decal_door.png<>res://retro_vhs.gdshader
+player.gd::GDScript::4611821924098680629::1780242693::0::1::::<>CharacterBody3D<><>0<>0<><>::
+player.tscn::PackedScene::-1::1780242757::0::1::::<><><>0<>0<><>::res://player.gd
+retro_vhs.gdshader::Shader::1502926817586654172::1780242747::0::1::::<><><>0<>0<><>::
+tex_ceiling.jpg::CompressedTexture2D::4232079447175997304::1780245985::1780246806::1::::<><><>0<>0<>7aa80652a22ca07c547eece58c3ad3fb<>res://.godot/imported/tex_ceiling.jpg-5fb248542f1634da4f333881edad4c72.s3tc.ctex::
+tex_countertop.jpg::CompressedTexture2D::1025585295279387501::1780245985::1780246803::1::::<><><>0<>0<>d3f49e03f74b69ff3b1deebe666f6f79<>res://.godot/imported/tex_countertop.jpg-2a800ae2c575135b6aead20fa5f8c6bc.ctex::
+tex_curtain.jpg::CompressedTexture2D::1936664564468468319::1780245985::1780246803::1::::<><><>0<>0<>c88ffe7aee05e65843a5ea1b08cb3c22<>res://.godot/imported/tex_curtain.jpg-202131eb4d43ccbfbdb61926edf3932e.ctex::
+tex_floor.jpg::CompressedTexture2D::1173595099479418255::1780245985::1780246806::1::::<><><>0<>0<>d778054a7ef3480277d13c0b663c0006<>res://.godot/imported/tex_floor.jpg-3a099fad9592c8794df1ebb1a98caf64.s3tc.ctex::
+tex_monitor.jpg::CompressedTexture2D::4256684734441755115::1780245985::1780246803::1::::<><><>0<>0<>d575b6a30082f0f340e0db8e5d2872d8<>res://.godot/imported/tex_monitor.jpg-ab2a01b9d17b518cc9152b9f17dbde6f.ctex::
+tex_rug.jpg::CompressedTexture2D::1868990262297310703::1780245985::1780246803::1::::<><><>0<>0<>7f0aea98be5e5954958ad9d9daa06eac<>res://.godot/imported/tex_rug.jpg-41f5b50e127b2971edf3e75c96c7b88b.ctex::
+tex_shelf_white.jpg::CompressedTexture2D::7471644535505579031::1780245985::1780246803::1::::<><><>0<>0<>5d067787a691ed65240cd532b5dd893b<>res://.godot/imported/tex_shelf_white.jpg-e322aa4f10b241eefbbc93a60fb014a9.ctex::
+tex_sofa_beige.jpg::CompressedTexture2D::5391125031206711114::1780245985::1780246803::1::::<><><>0<>0<>78b96c65f9843e85da9af22d6d5b7f40<>res://.godot/imported/tex_sofa_beige.jpg-dd3e7fdb6693de1dd90c3ff3453c1d19.ctex::
+tex_sofa_navy.jpg::CompressedTexture2D::7959518869159148838::1780245985::1780246803::1::::<><><>0<>0<>dbbbfddd451ec4e9711776f4c872861c<>res://.godot/imported/tex_sofa_navy.jpg-5baf882ec8492bbef1b5cbd9dd8e52d3.ctex::
+tex_tulle.jpg::CompressedTexture2D::4566730014722487120::1780245985::1780246803::1::::<><><>0<>0<>dc97b1bd01a4206172dcedee56bc30b8<>res://.godot/imported/tex_tulle.jpg-a079108296c53d2073ee9f5ab2351a8b.ctex::
+tex_wallpaper.jpg::CompressedTexture2D::1536000730429067819::1780245985::1780246806::1::::<><><>0<>0<>a1b2cd01f9fe62dae401d3b4f2c47d63<>res://.godot/imported/tex_wallpaper.jpg-c1728a0d43bbd5c2bcf49a63f431632b.s3tc.ctex::
+tex_wardrobe.jpg::CompressedTexture2D::863148380975280645::1780245985::1780246803::1::::<><><>0<>0<>cb85e78516048607263218e455e359fe<>res://.godot/imported/tex_wardrobe.jpg-ed4e734e6d4602bf483d0f089ede2754.ctex::
+::res://_raw/::1780246804
+ChatGPT Image 31 мая 2026 г., 19_34_01.png::CompressedTexture2D::4532052505933186034::1780245241::1780246804::1::::<><><>0<>0<>3458609ad263c7d91b5e5dda3ca418df<>res://.godot/imported/ChatGPT Image 31 мая 2026 г., 19_34_01.png-99d29397a00cd236cfcdafbd6221bf51.ctex::
+ChatGPT Image 31 мая 2026 г., 19_34_09.png::CompressedTexture2D::1284318068815057957::1780245251::1780246804::1::::<><><>0<>0<>b277ae0c486009ce7d7ac92563faa18a<>res://.godot/imported/ChatGPT Image 31 мая 2026 г., 19_34_09.png-8207f267a29a5260d8de4da3b4e7260d.ctex::
+ChatGPT Image 31 мая 2026 г., 19_34_13.png::CompressedTexture2D::78948468550725549::1780245254::1780246804::1::::<><><>0<>0<>9ff78ab9e867e3213b403e0649370997<>res://.godot/imported/ChatGPT Image 31 мая 2026 г., 19_34_13.png-41cac39cb9db1fef86ce5de49cf2e623.ctex::
+decals.png::CompressedTexture2D::5828199311648788998::1780245254::1780246804::1::::<><><>0<>0<>19681614c3febe1814f750fe1bfd53a8<>res://.godot/imported/decals.png-8ec8ea7988b8eda7e5be1f7c71c661c4.ctex::
+fabrics.png::CompressedTexture2D::8518946161067781331::1780245251::1780246804::1::::<><><>0<>0<>65b282a4ae694311a9774bbf506f3a1b<>res://.godot/imported/fabrics.png-6b5e752ecfa8d88a216251f89b0b0cb4.ctex::
+Gemini_Generated_Image_p9ti6vp9ti6vp9ti.png::CompressedTexture2D::1457502977045374567::1780245378::1780246804::1::::<><><>0<>0<>ffd64cc9c4f2b014eb3cf90ff85c6799<>res://.godot/imported/Gemini_Generated_Image_p9ti6vp9ti6vp9ti.png-40c5312f4bbe6b83dffc59229d490b47.ctex::
+monitor.png::CompressedTexture2D::8081405461510495827::1780245378::1780246804::1::::<><><>0<>0<>902ce71bcfec29125124d476467a2d0b<>res://.godot/imported/monitor.png-468c0f326083383524ac78273205b4d2.ctex::
+surfaces.png::CompressedTexture2D::4806185103141344602::1780245241::1780246804::1::::<><><>0<>0<>29a43407013d6d64fcfce57280f75625<>res://.godot/imported/surfaces.png-a3b227f7fbad8a5aa82ee9f3ee32ab26.ctex::
+::res://tools/::1780245973
