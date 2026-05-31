@@ -37,7 +37,7 @@ func _ready() -> void:
 func _tex(path: String, scale := Vector3.ONE, rough := 1.0) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
 	m.albedo_texture = load(path)
-	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST   # crisp PS1 pixels
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR    # soft retro, not crunchy nearest
 	m.roughness = rough
 	m.metallic = 0.0
 	m.uv1_scale = scale
@@ -47,7 +47,7 @@ func _tex(path: String, scale := Vector3.ONE, rough := 1.0) -> StandardMaterial3
 func _col(color: Color, rough := 0.8, metallic := 0.0) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
 	m.albedo_color = color
-	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
 	m.roughness = rough
 	m.metallic = metallic
 	return m
@@ -149,7 +149,7 @@ func _decal(parent: Node3D, path: String, size: Vector2, pos: Vector3, rot_deg: 
 	mi.mesh = qm
 	var m := StandardMaterial3D.new()
 	m.albedo_texture = load(path)
-	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
 	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
 	m.alpha_scissor_threshold = 0.5
 	m.cull_mode = BaseMaterial3D.CULL_DISABLED
@@ -199,7 +199,7 @@ func _build_desk() -> void:
 	var desk := Node3D.new()
 	desk.name = "Desk"
 	add_child(desk)
-	var cx := -HALF_W + 0.30   # against the west wall
+	var cx := HALF_W - 0.30    # desk on the east wall (matches the real room)
 	var cz := -1.20            # near the window end
 	# Top.
 	_box(desk, Vector3(0.6, 0.04, 1.5), Vector3(cx, 0.74, cz), _mats["counter"], "Top")
@@ -212,14 +212,14 @@ func _build_desk() -> void:
 
 
 func _build_monitors(parent: Node3D, cx: float, cz: float) -> void:
-	# Two monitors on the desk, screens facing +X (toward the chair).
+	# Two monitors on the desk, screens facing -X (toward the chair).
 	for mz in [cz - 0.35, cz + 0.30]:
-		var px := cx - 0.16
+		var px := cx + 0.16
 		# Stand + bezel.
 		_box(parent, Vector3(0.04, 0.04, 0.18), Vector3(px, 0.78, mz), _mats["metal"], "MonStand")
 		_box(parent, Vector3(0.03, 0.34, 0.5), Vector3(px, 1.0, mz), _mats["metal"], "MonBezel")
-		# Glowing screen quad on the +X face (emissive screen material).
-		var scr := _decal(parent, "res://tex_monitor.jpg", Vector2(0.46, 0.30), Vector3(px + 0.02, 1.0, mz), Vector3(0, 90, 0), "Screen")
+		# Glowing screen quad on the -X face (emissive screen material).
+		var scr := _decal(parent, "res://tex_monitor.jpg", Vector2(0.46, 0.30), Vector3(px - 0.02, 1.0, mz), Vector3(0, -90, 0), "Screen")
 		scr.material_override = _mats["screen"]
 
 
@@ -227,7 +227,7 @@ func _build_chair() -> void:
 	var chair := Node3D.new()
 	chair.name = "Chair"
 	add_child(chair)
-	var cx := -0.55
+	var cx := 0.55
 	var cz := -1.05
 	_box(chair, Vector3(0.45, 0.08, 0.45), Vector3(cx, 0.5, cz), _mats["chair"], "Seat")
 	_box(chair, Vector3(0.08, 0.5, 0.45), Vector3(cx + 0.20, 0.78, cz), _mats["chair"], "Back")
@@ -236,11 +236,11 @@ func _build_chair() -> void:
 
 
 func _build_shelf() -> void:
-	# White cube shelf (Kallax-style), west wall, between desk and door end.
+	# White cube shelf (Kallax-style), east wall, between desk and door end.
 	var shelf := Node3D.new()
 	shelf.name = "Shelf"
 	add_child(shelf)
-	var cx := -HALF_W + 0.175
+	var cx := HALF_W - 0.175
 	var cz := 0.25
 	var t := 0.03
 	var mat: Material = _mats["shelf"]
@@ -249,7 +249,7 @@ func _build_shelf() -> void:
 	_box(shelf, Vector3(0.35, t, 0.75), Vector3(cx, 1.485, cz), mat, "Top")
 	_box(shelf, Vector3(0.35, 1.5, t), Vector3(cx, 0.75, cz - 0.36), mat, "SideA")
 	_box(shelf, Vector3(0.35, 1.5, t), Vector3(cx, 0.75, cz + 0.36), mat, "SideB")
-	_box(shelf, Vector3(0.04, 1.5, 0.75), Vector3(cx - 0.155, 0.75, cz), mat, "Back")
+	_box(shelf, Vector3(0.04, 1.5, 0.75), Vector3(cx + 0.155, 0.75, cz), mat, "Back")
 	# Internal grid -> 2 columns x 4 rows of cubbies.
 	_box(shelf, Vector3(0.33, 1.5, t), Vector3(cx, 0.75, cz), mat, "Divider")
 	for y in [0.375, 0.75, 1.125]:
@@ -258,30 +258,30 @@ func _build_shelf() -> void:
 
 
 func _build_wardrobe() -> void:
-	# Tall cream wardrobe, east wall near the door corner.
+	# Tall cream wardrobe, west wall near the door corner.
 	var w := Node3D.new()
 	w.name = "Wardrobe"
 	add_child(w)
-	var cx := HALF_W - 0.275
+	var cx := -HALF_W + 0.275
 	var cz := 1.50
 	_box(w, Vector3(0.55, 2.3, 1.0), Vector3(cx, 1.15, cz), _mats["wardrobe"], "Body")
 	# Door seam + two handles.
 	_box(w, Vector3(0.56, 2.3, 0.02), Vector3(cx, 1.15, cz), _mats["metal"], "Seam")
-	_box(w, Vector3(0.04, 0.18, 0.03), Vector3(cx - 0.28, 1.2, cz - 0.06), _mats["metal"], "HandleA")
-	_box(w, Vector3(0.04, 0.18, 0.03), Vector3(cx - 0.28, 1.2, cz + 0.06), _mats["metal"], "HandleB")
+	_box(w, Vector3(0.04, 0.18, 0.03), Vector3(cx + 0.28, 1.2, cz - 0.06), _mats["metal"], "HandleA")
+	_box(w, Vector3(0.04, 0.18, 0.03), Vector3(cx + 0.28, 1.2, cz + 0.06), _mats["metal"], "HandleB")
 	_collider(w, Vector3(0.55, 2.3, 1.0), Vector3(cx, 1.15, cz), "WardrobeBody")
 
 
 func _build_sofa() -> void:
-	# Blue day-bed / sofa, east wall.
+	# Blue day-bed / sofa, west wall.
 	var s := Node3D.new()
 	s.name = "Sofa"
 	add_child(s)
-	var cx := HALF_W - 0.45
+	var cx := -HALF_W + 0.45
 	var cz := -0.55
 	_box(s, Vector3(0.85, 0.35, 1.95), Vector3(cx, 0.175, cz), _mats["sofa_beige"], "Base")
 	_box(s, Vector3(0.8, 0.16, 1.9), Vector3(cx, 0.43, cz), _mats["sofa_navy"], "Seat")
-	_box(s, Vector3(0.18, 0.55, 1.95), Vector3(cx + 0.33, 0.6, cz), _mats["sofa_navy"], "Back")
+	_box(s, Vector3(0.18, 0.55, 1.95), Vector3(cx - 0.33, 0.6, cz), _mats["sofa_navy"], "Back")
 	# Arms at both ends.
 	for az in [cz - 0.9, cz + 0.9]:
 		_box(s, Vector3(0.85, 0.45, 0.16), Vector3(cx, 0.33, az), _mats["sofa_beige"], "Arm")
@@ -291,14 +291,14 @@ func _build_sofa() -> void:
 
 
 func _build_pullup_bar() -> void:
-	# Black wall-mounted pull-up bar above the sofa (east wall).
+	# Black wall-mounted pull-up bar above the sofa (west wall).
 	var bar := Node3D.new()
 	bar.name = "PullUpBar"
 	add_child(bar)
-	var wall_x := HALF_W - 0.01
+	var wall_x := -HALF_W + 0.01
 	for bz in [-1.2, 0.0]:
-		_box(bar, Vector3(0.28, 0.04, 0.04), Vector3(wall_x - 0.14, 2.0, bz), _mats["metal"], "Bracket")
-	_rod(bar, Vector3(wall_x - 0.26, 2.0, -1.25), Vector3(wall_x - 0.26, 2.0, 0.05), 0.025, _mats["metal"], "Bar")
+		_box(bar, Vector3(0.28, 0.04, 0.04), Vector3(wall_x + 0.14, 2.0, bz), _mats["metal"], "Bracket")
+	_rod(bar, Vector3(wall_x + 0.26, 2.0, -1.25), Vector3(wall_x + 0.26, 2.0, 0.05), 0.025, _mats["metal"], "Bar")
 
 
 func _build_window() -> void:
@@ -335,8 +335,8 @@ func _build_chandelier() -> void:
 
 
 func _build_decals() -> void:
-	# Wall art on the west wall (faces +X into the room).
-	var x := -HALF_W + 0.015
-	_decal(self, "res://decal_worldmap.png", Vector2(1.6, 0.95), Vector3(x, 1.78, -0.7), Vector3(0, 90, 0), "WorldMap")
-	_decal(self, "res://decal_clock.png", Vector2(0.4, 0.4), Vector3(x, 1.95, 0.78), Vector3(0, 90, 0), "Clock")
-	_decal(self, "res://decal_frames.png", Vector2(0.62, 0.5), Vector3(x, 1.68, 1.35), Vector3(0, 90, 0), "Frames")
+	# Wall art on the east wall above the desk (faces -X into the room).
+	var x := HALF_W - 0.015
+	_decal(self, "res://decal_worldmap.png", Vector2(1.6, 0.95), Vector3(x, 1.78, -0.7), Vector3(0, -90, 0), "WorldMap")
+	_decal(self, "res://decal_clock.png", Vector2(0.4, 0.4), Vector3(x, 1.95, 0.78), Vector3(0, -90, 0), "Clock")
+	_decal(self, "res://decal_frames.png", Vector2(0.62, 0.5), Vector3(x, 1.68, 1.35), Vector3(0, -90, 0), "Frames")
