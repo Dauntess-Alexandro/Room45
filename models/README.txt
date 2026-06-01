@@ -15,6 +15,11 @@ If the sofa is wrong way around, edit furniture.gd:
 
 Target real size: ~0.85 m wide (into room) × ~1.9 m long × ~0.55 m tall.
 
+Pillow + blanket
+----------------
+Files:  pillow.glb ,  blanket.glb  — auto-placed on the sofa (blue material).
+Tweak: furniture.gd → GLB_UNIT_SCALE and blanket_xz / pillow_xz ratios in _attach_sofa_accessories().
+
 Monitor + PC
 ------------
 Desk uses procedural CRT boxes + tex_monitor.jpg glowing screens (two monitors).

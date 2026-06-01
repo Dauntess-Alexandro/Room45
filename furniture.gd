@@ -1,3 +1,4 @@
+@tool
 extends Node3D
 ## Procedurally builds all the room props (desk, shelves, wardrobe, sofa,
 ## chair, chandelier, monitors, pull-up bar, window dressing, rug and the wall
@@ -21,12 +22,34 @@ const SOFA_TARGET_SIZE := Vector3(1.10, 0.95, 2.35)
 const SOFA_CENTER_Z := -0.55
 const SOFA_WALL_GAP := 0.04
 
+const PILLOW_GLB := "res://models/pillow.glb"
+const BLANKET_GLB := "res://models/blanket.glb"
+## Sketchfab exports are often ~1000× too large — pre-shrink then match sofa size.
+const GLB_UNIT_SCALE := 0.001
+
 const SCREEN_SIZE := Vector2(0.46, 0.30)
+
+## Single old PC model on the desk (replaces the two procedural CRT boxes).
+const COMPUTER_GLB := "res://models/old_computer.glb"
+const COMPUTER_TARGET_H := 0.42   # overall height in metres (tweak to taste)
+const COMPUTER_YAW := 180.0       # face the screen into the room (−X); flip 180 if backwards
+# The glowing CRT overlay lives in main.tscn as the "ComputerScreen" node so it
+# can be dragged onto the monitor by hand in the editor (this script is @tool, so
+# the desk + PC render in-editor as an alignment reference).
 
 var _mats := {}
 
 
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		# Lightweight editor preview: just the desk + PC, so the ComputerScreen
+		# node has something to align against. Generated nodes are left unowned,
+		# so they show in the viewport but are never saved into the scene.
+		for c in get_children():
+			c.free()
+		_build_materials()
+		_build_desk()
+		return
 	_build_materials()
 	_build_rug()
 	_build_desk()
@@ -67,6 +90,7 @@ func _build_materials() -> void:
 	_mats["wardrobe"]  = _tex("res://tex_wardrobe.jpg", Vector3(1, 2, 1))
 	_mats["sofa_navy"] = _tex("res://tex_sofa_navy.jpg")
 	_mats["sofa_beige"] = _tex("res://tex_sofa_beige.jpg")
+	_mats["sofa_blue"] = _col(Color(0.10, 0.38, 0.78), 0.88)   # pillow + blanket
 	_mats["rug"]       = _tex("res://tex_rug.jpg", Vector3(1, 1, 3))
 	_mats["curtain"]   = _tex("res://tex_curtain.jpg", Vector3(1, 2, 1))
 	_mats["metal"]     = _col(Color(0.08, 0.08, 0.09), 0.4, 0.6)   # black frames
@@ -218,35 +242,44 @@ func _build_desk() -> void:
 	var desk := Node3D.new()
 	desk.name = "Desk"
 	add_child(desk)
-	var cx := HALF_W - 0.30    # desk on the east wall (matches the real room)
+	var depth := 0.70          # X (into the room) — wider so the PC + keyboard fit
+	var length := 1.80         # Z (along the wall)
+	var cx := HALF_W - depth * 0.5   # back edge flush with the east wall
 	var cz := -1.20            # near the window end
 	# Top.
-	_box(desk, Vector3(0.6, 0.04, 1.5), Vector3(cx, 0.74, cz), _mats["counter"], "Top")
+	_box(desk, Vector3(depth, 0.04, length), Vector3(cx, 0.74, cz), _mats["counter"], "Top")
 	# Black metal legs.
-	for sx in [-0.27, 0.27]:
-		for sz in [-0.71, 0.71]:
+	for sx in [-(depth * 0.5 - 0.04), depth * 0.5 - 0.04]:
+		for sz in [-(length * 0.5 - 0.05), length * 0.5 - 0.05]:
 			_box(desk, Vector3(0.05, 0.72, 0.05), Vector3(cx + sx, 0.36, cz + sz), _mats["metal"], "Leg")
-	_collider(desk, Vector3(0.6, 0.74, 1.5), Vector3(cx, 0.37, cz), "DeskBody")
+	_collider(desk, Vector3(depth, 0.74, length), Vector3(cx, 0.37, cz), "DeskBody")
 	_build_monitors(desk, cx, cz)
 
 
 func _build_monitors(parent: Node3D, cx: float, cz: float) -> void:
-	# Blocky CRT + glowing desktop (no GLB until the model is sorted out).
-	var px := cx - 0.16   # room-facing edge of the east-wall desk
-	var mon_z: Array[float] = [-0.35, 0.30]
-	for i in mon_z.size():
-		var mz: float = cz + mon_z[i]
-		_box(parent, Vector3(0.04, 0.04, 0.18), Vector3(px, 0.78, mz), _mats["metal"], "Stand%d" % i)
-		_box(parent, Vector3(0.03, 0.34, 0.5), Vector3(px, 1.0, mz), _mats["metal"], "Bezel%d" % i)
-		var scr := MeshInstance3D.new()
-		scr.name = "Screen%d" % i
-		var qm := QuadMesh.new()
-		qm.size = SCREEN_SIZE
-		scr.mesh = qm
-		scr.material_override = _mats["screen"]
-		scr.position = Vector3(px - 0.022, 1.0, mz)
-		scr.rotation_degrees = Vector3(0, 90, 0)
-		parent.add_child(scr)
+	# One old PC model on the desk. Falls back to nothing if the GLB is missing.
+	if not ResourceLoader.exists(COMPUTER_GLB):
+		return
+	var pc: Node3D = (load(COMPUTER_GLB) as PackedScene).instantiate()
+	pc.name = "Computer"
+	parent.add_child(pc)
+	# Defer sizing/placement so the instanced GLB's transforms are settled.
+	call_deferred("_finalize_computer", pc, cx, cz)
+
+
+func _finalize_computer(pc: Node3D, cx: float, cz: float) -> void:
+	if not is_instance_valid(pc):
+		return
+	pc.rotation_degrees = Vector3(0.0, COMPUTER_YAW, 0.0)
+	var box := _mesh_aabb_in_space(pc, self)
+	pc.scale = Vector3.ONE * (COMPUTER_TARGET_H / maxf(box.size.y, 0.001))
+	box = _mesh_aabb_in_space(pc, self)
+	var desk_top_y := 0.76    # desk top: centre 0.74 + half of 0.04 thickness
+	pc.position = Vector3(
+		cx - box.get_center().x,
+		desk_top_y - box.position.y,
+		cz - box.get_center().z,
+	)
 
 
 func _build_shelf() -> void:
@@ -364,6 +397,90 @@ func _finalize_sofa_glb() -> void:
 		SOFA_CENTER_Z - (box.position.z + box.size.z * 0.5),
 	)
 	_collider(s, box.size, box.get_center(), "SofaBody")
+	_attach_sofa_accessories(s)
+
+
+func _style_glb_meshes(root: Node3D, mat: Material) -> void:
+	for mi: MeshInstance3D in root.find_children("*", "MeshInstance3D", true, false):
+		mi.material_override = mat
+
+
+func _sofa_seat_metrics(sofa: Node3D) -> Dictionary:
+	# Measured in ROOM space: this already bakes in the sofa's (non-uniform)
+	# scale + rotation, so accessories parented to `self` stay un-sheared.
+	var b := _mesh_aabb_in_space(sofa, self)
+	# West wall = min X; seat cushion is the forward (+X, room-facing) part.
+	return {
+		"top_y": b.position.y + b.size.y * 0.42,
+		"cx": b.position.x + b.size.x * 0.62,
+		"cz": b.position.z + b.size.z * 0.50,
+		"half_z": b.size.z * 0.44,
+		"window_z": b.position.z + b.size.z * 0.24,
+	}
+
+
+func _pick_flat_rotation_deg(item: Node3D, parent: Node3D) -> Vector3:
+	var best := Vector3.ZERO
+	var best_h := INF
+	parent.add_child(item)
+	item.position = Vector3.ZERO
+	for rot: Vector3 in [
+		Vector3.ZERO,
+		Vector3(-90, 0, 0), Vector3(90, 0, 0),
+		Vector3(0, -90, 0), Vector3(0, 90, 0),
+		Vector3(0, 0, -90), Vector3(0, 0, 90),
+	]:
+		item.rotation_degrees = rot
+		item.scale = Vector3.ONE * GLB_UNIT_SCALE
+		var h: float = _mesh_aabb_in_space(item, parent).size.y
+		if h < best_h:
+			best_h = h
+			best = rot
+	item.rotation_degrees = best
+	return best
+
+
+func _fit_glb_flat_on_seat(item: Node3D, parent: Node3D, xz_size: Vector2) -> AABB:
+	_pick_flat_rotation_deg(item, parent)
+	var box := _mesh_aabb_in_space(item, parent)
+	var src := maxf(box.size.x, box.size.z)
+	if src < 0.02:
+		src = maxf(box.size.x, maxf(box.size.y, box.size.z))
+	var dst := maxf(xz_size.x, xz_size.y)
+	var s := dst / maxf(src, 0.001)
+	item.scale = Vector3.ONE * (GLB_UNIT_SCALE * s)
+	return _mesh_aabb_in_space(item, parent)
+
+
+func _seat_bottom_position(box: AABB, seat: Dictionary, offset: Vector3) -> Vector3:
+	# Sit on the cushion: align the mesh bottom to seat_top_y.
+	return Vector3(
+		seat["cx"] - box.get_center().x + offset.x,
+		seat["top_y"] - box.position.y + offset.y,
+		seat["cz"] - box.get_center().z + offset.z,
+	)
+
+
+func _attach_sofa_accessories(sofa: Node3D) -> void:
+	var blue: Material = _mats["sofa_blue"]
+	var seat := _sofa_seat_metrics(sofa)
+	# Real-world (room-space) footprint of the sofa, so sizes are in metres.
+	var sb := _mesh_aabb_in_space(sofa, self)
+	var pillow_xz := Vector2(sb.size.x * 0.42, sb.size.z * 0.22)    # ~0.46 × 0.52 m cushion
+
+	# Parent to `self` (uniform scale) — NOT to the non-uniformly scaled sofa,
+	# otherwise the items get sheared/stretched.
+	if ResourceLoader.exists(PILLOW_GLB):
+		var pillow: Node3D = (load(PILLOW_GLB) as PackedScene).instantiate()
+		pillow.name = "Pillow"
+		_style_glb_meshes(pillow, blue)
+		var p_box := _fit_glb_flat_on_seat(pillow, self, pillow_xz)
+		# Window end of the daybed (−Z), resting on the cushion by the backrest.
+		pillow.position = Vector3(
+			seat["cx"] - p_box.get_center().x - 0.06,
+			seat["top_y"] - p_box.position.y + 0.02,
+			seat["window_z"] - p_box.get_center().z,
+		)
 
 
 func _build_sofa_placeholder() -> void:
@@ -374,7 +491,6 @@ func _build_sofa_placeholder() -> void:
 	var cx := -HALF_W + 0.44
 	var cz := -0.55
 	var beige: Material = _mats["sofa_beige"]
-	var navy: Material = _mats["sofa_navy"]
 	# Pull-out base slab.
 	_box(s, Vector3(0.74, 0.22, 1.90), Vector3(cx, 0.11, cz), beige, "Base")
 	# Back rest against the wall.
@@ -385,15 +501,12 @@ func _build_sofa_placeholder() -> void:
 	for z in [cz - 0.80, cz + 0.80]:
 		var end_cap := _cyl(s, 0.19, 0.68, Vector3(cx + 0.04, 0.34, z), beige, "EndCap")
 		end_cap.rotation_degrees = Vector3(90, 0, 0)
-	# Navy throw — single layer on top.
-	_box(s, Vector3(0.64, 0.07, 1.50), Vector3(cx + 0.02, 0.43, cz), navy, "Blanket")
-	# Teal pillow by the window end.
-	_box(s, Vector3(0.44, 0.14, 0.34), Vector3(cx + 0.02, 0.50, cz - 0.55), _mats["pillow"], "Pillow")
 	# Chrome legs.
 	for lx in [cx - 0.26, cx + 0.04]:
 		for lz in [cz - 0.78, cz + 0.78]:
 			_cyl(s, 0.025, 0.09, Vector3(lx, 0.045, lz), _mats["chrome"], "Leg")
 	_collider(s, Vector3(0.76, 0.52, 1.90), Vector3(cx, 0.26, cz), "SofaBody")
+	_attach_sofa_accessories(s)
 
 
 func _build_pullup_bar() -> void:

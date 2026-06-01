@@ -1,66 +1,78 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene format=3 uid="uid://bqm0gf07nj1hi"]
 
 [ext_resource type="PackedScene" path="res://player.tscn" id="1_player"]
+[ext_resource type="Script" uid="uid://di31ty3xiqiki" path="res://interactable.gd" id="2_inter"]
+[ext_resource type="Script" uid="uid://cvl0pfs7xddma" path="res://furniture.gd" id="3_furn"]
+[ext_resource type="Texture2D" uid="uid://v5bycag7a5hf" path="res://tex_wallpaper.jpg" id="4_wall"]
+[ext_resource type="Texture2D" uid="uid://qyq67o3xtig2" path="res://tex_floor.jpg" id="5_floor"]
+[ext_resource type="Texture2D" uid="uid://b1kby3daobgjg" path="res://tex_ceiling.jpg" id="6_ceil"]
+[ext_resource type="Texture2D" uid="uid://dkq4qxftsfmvo" path="res://decal_door.png" id="7_door"]
+[ext_resource type="Shader" uid="uid://voa8q1tw2vsm" path="res://retro_vhs.gdshader" id="8_shader"]
 [ext_resource type="PackedScene" path="res://pause_menu.tscn" id="9_pause"]
-[ext_resource type="Script" path="res://interactable.gd" id="2_inter"]
-[ext_resource type="Script" path="res://furniture.gd" id="3_furn"]
-[ext_resource type="Texture2D" path="res://tex_wallpaper.jpg" id="4_wall"]
-[ext_resource type="Texture2D" path="res://tex_floor.jpg" id="5_floor"]
-[ext_resource type="Texture2D" path="res://tex_ceiling.jpg" id="6_ceil"]
-[ext_resource type="Texture2D" path="res://decal_door.png" id="7_door"]
-[ext_resource type="Shader" path="res://retro_vhs.gdshader" id="8_shader"]
+[ext_resource type="Texture2D" uid="uid://b1v78f4uyh4lj" path="res://tex_monitor.jpg" id="10_monitor"]
 
-; --- Room shell materials (nearest filter + world triplanar tiling) ----------
-
-[sub_resource type="StandardMaterial3D" id="WallMat"]
-albedo_texture = ExtResource("4_wall")
-texture_filter = 1
-roughness = 1.0
-metallic = 0.0
-uv1_triplanar = true
-uv1_world_triplanar = true
-uv1_scale = Vector3(0.8, 0.8, 0.8)
+[sub_resource type="Environment" id="Env"]
+background_mode = 1
+background_color = Color(0.02, 0.02, 0.03, 1)
+ambient_light_color = Color(0.28, 0.29, 0.32, 1)
+ambient_light_sky_contribution = 0.0
+ambient_light_energy = 0.45
+tonemap_mode = 2
 
 [sub_resource type="StandardMaterial3D" id="FloorMat"]
 albedo_texture = ExtResource("5_floor")
-texture_filter = 1
-roughness = 1.0
-metallic = 0.0
+uv1_scale = Vector3(0.6, 0.6, 0.6)
 uv1_triplanar = true
 uv1_world_triplanar = true
-uv1_scale = Vector3(0.6, 0.6, 0.6)
+texture_filter = 1
 
 [sub_resource type="StandardMaterial3D" id="CeilingMat"]
 albedo_texture = ExtResource("6_ceil")
-texture_filter = 1
-roughness = 1.0
-metallic = 0.0
+uv1_scale = Vector3(0.8, 0.8, 0.8)
 uv1_triplanar = true
 uv1_world_triplanar = true
-uv1_scale = Vector3(0.8, 0.8, 0.8)
+texture_filter = 1
 
-; --- Interactables ----------------------------------------------------------
+[sub_resource type="StandardMaterial3D" id="WallMat"]
+albedo_texture = ExtResource("4_wall")
+uv1_scale = Vector3(0.8, 0.8, 0.8)
+uv1_triplanar = true
+uv1_world_triplanar = true
+texture_filter = 1
+
+[sub_resource type="StandardMaterial3D" id="ScreenMat"]
+render_priority = 10
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("10_monitor")
+uv1_scale = Vector3(-1, 1, 1)
+uv1_offset = Vector3(1, 0, 0)
+texture_filter = 1
+
+[sub_resource type="QuadMesh" id="ScreenQuad"]
+size = Vector2(0.292, 0.222)
 
 [sub_resource type="StandardMaterial3D" id="DoorMat"]
-albedo_texture = ExtResource("7_door")
-texture_filter = 1
 transparency = 2
 alpha_scissor_threshold = 0.5
+alpha_antialiasing_mode = 0
 cull_mode = 2
+albedo_texture = ExtResource("7_door")
 roughness = 0.7
+texture_filter = 1
 
 [sub_resource type="BoxMesh" id="DoorMesh"]
-size = Vector3(0.9, 2.0, 0.06)
+size = Vector3(0.9, 2, 0.06)
 
 [sub_resource type="BoxShape3D" id="DoorShape"]
-size = Vector3(0.9, 2.0, 0.06)
+size = Vector3(0.9, 2, 0.06)
 
 [sub_resource type="StandardMaterial3D" id="SwitchMat"]
 albedo_color = Color(0.05, 0.05, 0.06, 1)
-texture_filter = 1
 emission_enabled = true
 emission = Color(0, 1, 0.4, 1)
 emission_energy_multiplier = 2.0
+texture_filter = 1
 
 [sub_resource type="BoxMesh" id="SwitchMesh"]
 size = Vector3(0.12, 0.18, 0.04)
@@ -70,18 +82,16 @@ size = Vector3(0.12, 0.18, 0.04)
 
 [sub_resource type="StandardMaterial3D" id="PickupMat"]
 albedo_color = Color(0.04, 0.06, 0.07, 1)
-texture_filter = 1
 emission_enabled = true
 emission = Color(0, 0.9, 1, 1)
 emission_energy_multiplier = 2.5
+texture_filter = 1
 
 [sub_resource type="BoxMesh" id="PickupMesh"]
 size = Vector3(0.2, 0.2, 0.2)
 
 [sub_resource type="BoxShape3D" id="PickupShape"]
 size = Vector3(0.2, 0.2, 0.2)
-
-; --- Post-process + environment ----------------------------------------------
 
 [sub_resource type="ShaderMaterial" id="VHSMat"]
 shader = ExtResource("8_shader")
@@ -92,167 +102,144 @@ shader_parameter/noise_strength = 0.015
 shader_parameter/color_levels = 64.0
 shader_parameter/retro_mix = 0.55
 
-[sub_resource type="Environment" id="Env"]
-background_mode = 1
-background_color = Color(0.02, 0.02, 0.03, 1)
-ambient_light_color = Color(0.28, 0.29, 0.32, 1)
-ambient_light_sky_contribution = 0.0
-ambient_light_energy = 0.45
-tonemap_mode = 2
+[node name="Main" type="Node3D" unique_id=554002448]
 
-; =============================================================================
-; SCENE TREE
-; =============================================================================
-
-[node name="Main" type="Node3D"]
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1966734883]
 environment = SubResource("Env")
 
-; --- Enclosed room: interior X=2.62, Z=4.6, Y=2.7 ----------------------------
+[node name="Room" type="Node3D" parent="." unique_id=1337539812]
 
-[node name="Room" type="Node3D" parent="."]
-
-[node name="Floor" type="CSGBox3D" parent="Room"]
+[node name="Floor" type="CSGBox3D" parent="Room" unique_id=1042444614]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
 use_collision = true
 size = Vector3(2.62, 0.1, 4.6)
 material = SubResource("FloorMat")
 
-[node name="Ceiling" type="CSGBox3D" parent="Room"]
+[node name="Ceiling" type="CSGBox3D" parent="Room" unique_id=2142878352]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.75, 0)
 use_collision = true
 size = Vector3(2.62, 0.1, 4.6)
 material = SubResource("CeilingMat")
 
-[node name="WallNorth" type="CSGBox3D" parent="Room"]
+[node name="WallNorth" type="CSGBox3D" parent="Room" unique_id=1546027081]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 2.35)
 use_collision = true
 size = Vector3(2.62, 2.7, 0.1)
 material = SubResource("WallMat")
 
-[node name="WallSouth" type="CSGBox3D" parent="Room"]
+[node name="WallSouth" type="CSGBox3D" parent="Room" unique_id=683402555]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, -2.35)
 use_collision = true
 size = Vector3(2.62, 2.7, 0.1)
 material = SubResource("WallMat")
 
-[node name="WallEast" type="CSGBox3D" parent="Room"]
+[node name="WallEast" type="CSGBox3D" parent="Room" unique_id=761791045]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 1.35, 0)
 use_collision = true
 size = Vector3(0.1, 2.7, 4.6)
 material = SubResource("WallMat")
 
-[node name="WallWest" type="CSGBox3D" parent="Room"]
+[node name="WallWest" type="CSGBox3D" parent="Room" unique_id=170566553]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.36, 1.35, 0)
 use_collision = true
 size = Vector3(0.1, 2.7, 4.6)
 material = SubResource("WallMat")
 
-; --- Lighting ----------------------------------------------------------------
-; CeilingLamp: warm bulb at the chandelier (toggled by the switch).
-; WindowLight: cool daylight fill from the north window.
-; Sun: kept per spec (angled daylight).
-
-[node name="CeilingLamp" type="OmniLight3D" parent="."]
+[node name="CeilingLamp" type="OmniLight3D" parent="." unique_id=626767052]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4, 0)
 light_color = Color(1, 0.86, 0.66, 1)
 light_energy = 2.2
-omni_range = 7.0
 shadow_enabled = true
+omni_range = 7.0
 
-[node name="WindowLight" type="OmniLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -2.0)
+[node name="WindowLight" type="OmniLight3D" parent="." unique_id=1956907168]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -2)
 light_color = Color(0.75, 0.83, 1, 1)
 light_energy = 1.3
 omni_range = 4.5
 
-[node name="Sun" type="DirectionalLight3D" parent="."]
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1753937622]
 transform = Transform3D(1, 0, 0, 0, 0.6428, -0.766, 0, 0.766, 0.6428, 0, 3, 0)
 light_energy = 0.25
 shadow_enabled = true
 
-; --- Player (spawns by the door, facing the window) --------------------------
-
-[node name="Player" parent="." instance=ExtResource("1_player")]
+[node name="Player" parent="." unique_id=821891331 instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 1.8)
 prompt_root_path = NodePath("../UI/InteractionPrompt")
 prompt_label_path = NodePath("../UI/InteractionPrompt/PromptLabel")
 
-; --- Procedural furniture (desk, shelf, wardrobe, sofa, chandelier, etc.) -----
-
-[node name="Furniture" type="Node3D" parent="."]
+[node name="Furniture" type="Node3D" parent="." unique_id=681028393]
 script = ExtResource("3_furn")
 
-; --- Interactable objects ----------------------------------------------------
+[node name="ComputerScreen" type="MeshInstance3D" parent="." unique_id=1988444363]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.99369323, 0.97913116, -1.324271)
+material_override = SubResource("ScreenMat")
+mesh = SubResource("ScreenQuad")
 
-[node name="Interactables" type="Node3D" parent="."]
+[node name="Interactables" type="Node3D" parent="." unique_id=1577011880]
 
-; a) DOOR — textured swinging door on the south wall; hinge at node origin.
-[node name="Door" type="StaticBody3D" parent="Interactables"]
+[node name="Door" type="StaticBody3D" parent="Interactables" unique_id=702127638]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 0, 2.27)
 script = ExtResource("2_inter")
-kind = 0
 prompt_text = "OPEN / CLOSE DOOR"
 door_open_angle = -95.0
 
-[node name="Mesh" type="MeshInstance3D" parent="Interactables/Door"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 1.0, 0)
-mesh = SubResource("DoorMesh")
+[node name="Mesh" type="MeshInstance3D" parent="Interactables/Door" unique_id=189488057]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 1, 0)
 material_override = SubResource("DoorMat")
+mesh = SubResource("DoorMesh")
 
-[node name="Collision" type="CollisionShape3D" parent="Interactables/Door"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 1.0, 0)
+[node name="Collision" type="CollisionShape3D" parent="Interactables/Door" unique_id=1113453554]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 1, 0)
 shape = SubResource("DoorShape")
 
-; b) LIGHT SWITCH — west wall by the door, toggles the CeilingLamp.
-[node name="LightSwitch" type="StaticBody3D" parent="Interactables"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.28, 1.3, 2.0)
+[node name="LightSwitch" type="StaticBody3D" parent="Interactables" unique_id=1432033389]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.28, 1.3, 2)
 script = ExtResource("2_inter")
 kind = 1
 prompt_text = "TOGGLE LAMP"
 target_light_path = NodePath("../../CeilingLamp")
 
-[node name="Mesh" type="MeshInstance3D" parent="Interactables/LightSwitch"]
-mesh = SubResource("SwitchMesh")
+[node name="Mesh" type="MeshInstance3D" parent="Interactables/LightSwitch" unique_id=1542270273]
 material_override = SubResource("SwitchMat")
+mesh = SubResource("SwitchMesh")
 
-[node name="Collision" type="CollisionShape3D" parent="Interactables/LightSwitch"]
+[node name="Collision" type="CollisionShape3D" parent="Interactables/LightSwitch" unique_id=1942662771]
 shape = SubResource("SwitchShape")
 
-; c) PICKUP — test cube on the shelf (not on the desk).
-[node name="Pickup" type="StaticBody3D" parent="Interactables"]
+[node name="Pickup" type="StaticBody3D" parent="Interactables" unique_id=1927422032]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.02, 0.95, 0.35)
 script = ExtResource("2_inter")
 kind = 2
 prompt_text = "PICK UP"
 
-[node name="Mesh" type="MeshInstance3D" parent="Interactables/Pickup"]
-mesh = SubResource("PickupMesh")
+[node name="Mesh" type="MeshInstance3D" parent="Interactables/Pickup" unique_id=1464305332]
 material_override = SubResource("PickupMat")
+mesh = SubResource("PickupMesh")
 
-[node name="Collision" type="CollisionShape3D" parent="Interactables/Pickup"]
+[node name="Collision" type="CollisionShape3D" parent="Interactables/Pickup" unique_id=211219495]
 shape = SubResource("PickupShape")
 
-; =============================================================================
-; UI / HUD  (VHS post-process at the bottom; crisp crosshair + prompt on top)
-; =============================================================================
+[node name="UI" type="CanvasLayer" parent="." unique_id=2027038555]
 
-[node name="UI" type="CanvasLayer" parent="."]
-
-[node name="VHSEffect" type="ColorRect" parent="UI"]
+[node name="VHSEffect" type="ColorRect" parent="UI" unique_id=362589055]
 material = SubResource("VHSMat")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 
-[node name="Crosshair" type="Control" parent="UI"]
+[node name="Crosshair" type="Control" parent="UI" unique_id=646786663]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 
-[node name="CH_Top" type="ColorRect" parent="UI/Crosshair"]
+[node name="CH_Top" type="ColorRect" parent="UI/Crosshair" unique_id=1032972222]
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -264,7 +251,8 @@ offset_bottom = -4.0
 mouse_filter = 2
 color = Color(0, 1, 0.6, 0.9)
 
-[node name="CH_Bottom" type="ColorRect" parent="UI/Crosshair"]
+[node name="CH_Bottom" type="ColorRect" parent="UI/Crosshair" unique_id=828600769]
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -276,7 +264,8 @@ offset_bottom = 11.0
 mouse_filter = 2
 color = Color(0, 1, 0.6, 0.9)
 
-[node name="CH_Left" type="ColorRect" parent="UI/Crosshair"]
+[node name="CH_Left" type="ColorRect" parent="UI/Crosshair" unique_id=1583262654]
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -288,7 +277,8 @@ offset_bottom = 1.0
 mouse_filter = 2
 color = Color(0, 1, 0.6, 0.9)
 
-[node name="CH_Right" type="ColorRect" parent="UI/Crosshair"]
+[node name="CH_Right" type="ColorRect" parent="UI/Crosshair" unique_id=561905834]
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -300,13 +290,18 @@ offset_bottom = 1.0
 mouse_filter = 2
 color = Color(0, 1, 0.6, 0.9)
 
-[node name="InteractionPrompt" type="Control" parent="UI"]
+[node name="InteractionPrompt" type="Control" parent="UI" unique_id=1225107951]
 visible = false
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 
-[node name="LeftTick" type="ColorRect" parent="UI/InteractionPrompt"]
+[node name="LeftTick" type="ColorRect" parent="UI/InteractionPrompt" unique_id=972949003]
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -318,7 +313,8 @@ offset_bottom = 76.0
 mouse_filter = 2
 color = Color(0, 0.9, 1, 1)
 
-[node name="RightTick" type="ColorRect" parent="UI/InteractionPrompt"]
+[node name="RightTick" type="ColorRect" parent="UI/InteractionPrompt" unique_id=128784766]
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -330,7 +326,8 @@ offset_bottom = 76.0
 mouse_filter = 2
 color = Color(0, 0.9, 1, 1)
 
-[node name="PromptLabel" type="Label" parent="UI/InteractionPrompt"]
+[node name="PromptLabel" type="Label" parent="UI/InteractionPrompt" unique_id=1600560593]
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -339,11 +336,10 @@ offset_left = -110.0
 offset_top = 48.0
 offset_right = 110.0
 offset_bottom = 78.0
-mouse_filter = 2
 theme_override_colors/font_color = Color(0, 1, 0.6, 1)
 theme_override_font_sizes/font_size = 18
 text = "[E]  INTERACT"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="PauseMenu" parent="UI" instance=ExtResource("9_pause")]
+[node name="PauseMenu" parent="UI" unique_id=1586447312 instance=ExtResource("9_pause")]
