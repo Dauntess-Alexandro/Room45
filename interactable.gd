@@ -62,17 +62,34 @@ func _toggle_door() -> void:
 
 # --- Light switch ------------------------------------------------------------
 func _toggle_light() -> void:
-	var light := get_node_or_null(target_light_path)
-	if light == null or not (light is Light3D):
-		push_warning("Interactable '%s': target_light_path does not point to a Light3D." % name)
+	# Target may be a single Light3D OR a parent node holding several lights
+	# (e.g. the four chandelier bulbs) — collect and toggle them together.
+	var target := get_node_or_null(target_light_path)
+	if target == null:
+		push_warning("Interactable '%s': target_light_path is not set or not found." % name)
+		return
+	var lights: Array[Node] = []
+	if target is Light3D:
+		lights.append(target)
+	lights.append_array(target.find_children("*", "Light3D", true, false))
+	if lights.is_empty():
+		push_warning("Interactable '%s': target_light_path has no Light3D under it." % name)
 		return
 
-	if light.light_energy > 0.0:
-		# Remember the current brightness so we can restore it exactly.
-		_saved_energy = light.light_energy
-		light.light_energy = 0.0
-	else:
-		light.light_energy = _saved_energy if _saved_energy > 0.0 else default_light_energy
+	# Lit if any light is currently on; flip them all to the opposite state.
+	var any_on := false
+	for l in lights:
+		if (l as Light3D).light_energy > 0.0:
+			any_on = true
+			break
+	for l in lights:
+		var light := l as Light3D
+		if any_on:
+			# Remember each bulb's brightness so we can restore it exactly.
+			light.set_meta("saved_energy", light.light_energy if light.light_energy > 0.0 else default_light_energy)
+			light.light_energy = 0.0
+		else:
+			light.light_energy = float(light.get_meta("saved_energy", default_light_energy))
 
 
 # --- Pickup ------------------------------------------------------------------

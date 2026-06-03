@@ -33,22 +33,47 @@ const SCREEN_SIZE := Vector2(0.46, 0.30)
 const COMPUTER_GLB := "res://models/old_computer.glb"
 const COMPUTER_TARGET_H := 0.42   # overall height in metres (tweak to taste)
 const COMPUTER_YAW := 180.0       # face the screen into the room (−X); flip 180 if backwards
-# The glowing CRT overlay lives in main.tscn as the "ComputerScreen" node so it
-# can be dragged onto the monitor by hand in the editor (this script is @tool, so
-# the desk + PC render in-editor as an alignment reference).
+
+## Optional hanging-lamp model. Drop models/chandelier.glb in and it replaces the
+## procedural chandelier (auto-scaled, hung from the ceiling, centred in the room).
+const CHANDELIER_GLB := "res://models/chandelier.glb"
+const CHANDELIER_TARGET_H := 0.55   # model height in metres
+const CHANDELIER_CEILING_Y := 2.70  # interior ceiling surface (room is 2.75 − half slab)
+const CHANDELIER_DROP := 0.0        # extra metres to lower it below the ceiling
+
+## Optional radiator model under the balcony window. Drop models/radiator.glb in.
+const RADIATOR_GLB := "res://models/radiator.glb"
+const RADIATOR_TARGET_W := 0.70     # width along the wall (X) in metres
+const RADIATOR_YAW := 0.0           # spin if it faces the wrong way
+
+## Optional balcony-door model (replaces the procedural door leaf on the right).
+const BALCONY_DOOR_GLB := "res://models/balcony_door.glb"
+const BALCONY_DOOR_TARGET_H := 2.05 # door height in metres (fills the opening)
+const BALCONY_DOOR_YAW := 0.0       # spin 180 if it faces the balcony, not the room
+
+## Optional curtains model hung over the balcony window (auto-fit).
+const CURTAINS_GLB := "res://models/curtains.glb"
+const CURTAINS_TARGET_H := 2.20     # curtain height in metres
+const CURTAINS_YAW := 90.0          # rotate so the wide span runs across the window
+const CURTAINS_TOP_Y := 2.32        # where the TOP of the curtains hangs
+# The glowing CRT overlay lives in main.tscn as the "ComputerScreen" node.
+#
+# Editing model: this script is @tool and runs ONCE to populate the scene with
+# real, editable nodes (see _ready / _finish_editor_populate). Anything any
+# _build_* function adds — including future GLB models — automatically becomes a
+# saved, draggable node, so new props are editable by default with no extra work:
+# just write a _build_* that adds it, open the scene, and Ctrl+S.
 
 var _mats := {}
 
 
 func _ready() -> void:
-	if Engine.is_editor_hint():
-		# Lightweight editor preview: just the desk + PC, so the ComputerScreen
-		# node has something to align against. Generated nodes are left unowned,
-		# so they show in the viewport but are never saved into the scene.
-		for c in get_children():
-			c.free()
-		_build_materials()
-		_build_desk()
+	# The furniture is generated ONCE as real, editable scene nodes. Once it has
+	# been built in the editor and saved (Ctrl+S), the nodes live in main.tscn and
+	# this guard leaves them alone — so your hand tweaks are never overwritten.
+	# (At runtime, if the scene was never populated, it falls back to an ephemeral
+	# build so the game still looks right.)
+	if get_child_count() > 0:
 		return
 	_build_materials()
 	_build_rug()
@@ -58,8 +83,42 @@ func _ready() -> void:
 	_build_sofa()
 	_build_pullup_bar()
 	_build_window()
+	_build_radiator()
+	_build_curtains()
 	_build_chandelier()
 	_build_decals()
+	if Engine.is_editor_hint():
+		# Runs after the deferred GLB finalizers (FIFO): turns every generated node
+		# into a saved, selectable, draggable part of the scene.
+		call_deferred("_finish_editor_populate")
+
+
+## Editor only: make all generated furniture owned by the scene root so it saves
+## into main.tscn and becomes selectable / draggable. After the first Ctrl+S the
+## _ready() guard keeps this from ever running again (delete the Furniture node's
+## children and reopen the scene if you ever want to regenerate from scratch).
+func _finish_editor_populate() -> void:
+	var tree := get_tree()
+	if tree == null:
+		return
+	var root := tree.edited_scene_root
+	if root == null:
+		return
+	for child in get_children():
+		_own_recursive(child, root)
+	print("[Furniture] Built editable furniture nodes — press Ctrl+S to bake them ",
+		"into the scene. After saving, this script no longer touches them.")
+
+
+func _own_recursive(node: Node, root: Node) -> void:
+	node.owner = root
+	# An instanced scene (GLB) saves as a clean instance reference and brings its
+	# own internal nodes from the resource. Owning those internals too would write
+	# duplicates and cause "node name conflicts" on load — so stop at the instance.
+	if node.scene_file_path != "":
+		return
+	for c in node.get_children():
+		_own_recursive(c, root)
 
 
 # =============================================================================
@@ -97,6 +156,13 @@ func _build_materials() -> void:
 	_mats["chrome"]    = _col(Color(0.8, 0.82, 0.85), 0.15, 1.0)
 	_mats["chair"]     = _col(Color(0.9, 0.9, 0.92), 0.6)
 	_mats["pillow"]    = _col(Color(0.1, 0.7, 0.75), 0.9)          # cyan accent
+	_mats["pvc"]       = _col(Color(0.93, 0.94, 0.96), 0.5)        # white PVC window/door frames
+
+	# Window glass: faint blue, see-through (bright daylight shows behind it).
+	var gwin := _col(Color(0.7, 0.85, 1.0, 0.16), 0.05)
+	gwin.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	gwin.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_mats["glass_win"] = gwin
 
 	# Tulle: semi-transparent floral net.
 	var tulle := _tex("res://tex_tulle.jpg")
@@ -270,15 +336,18 @@ func _build_monitors(parent: Node3D, cx: float, cz: float) -> void:
 func _finalize_computer(pc: Node3D, cx: float, cz: float) -> void:
 	if not is_instance_valid(pc):
 		return
+	var lbox := _local_aabb(pc)
+	var basis := Basis.from_euler(Vector3(0.0, deg_to_rad(COMPUTER_YAW), 0.0))
+	var rbox := _aabb_transformed(lbox, Transform3D(basis, Vector3.ZERO))
+	var k := COMPUTER_TARGET_H / maxf(rbox.size.y, 0.001)
+	var sbox := AABB(rbox.position * k, rbox.size * k)
 	pc.rotation_degrees = Vector3(0.0, COMPUTER_YAW, 0.0)
-	var box := _mesh_aabb_in_space(pc, self)
-	pc.scale = Vector3.ONE * (COMPUTER_TARGET_H / maxf(box.size.y, 0.001))
-	box = _mesh_aabb_in_space(pc, self)
+	pc.scale = Vector3.ONE * k
 	var desk_top_y := 0.76    # desk top: centre 0.74 + half of 0.04 thickness
 	pc.position = Vector3(
-		cx - box.get_center().x,
-		desk_top_y - box.position.y,
-		cz - box.get_center().z,
+		cx - sbox.get_center().x,
+		desk_top_y - sbox.position.y,
+		cz - sbox.get_center().z,
 	)
 
 
@@ -357,15 +426,38 @@ func _mesh_aabb_in_space(root: Node3D, space: Node3D) -> AABB:
 	return box
 
 
+## Mesh bounds in a node's OWN local space. Unlike measuring against another node,
+## this cancels the node's global transform exactly, so it's reliable even inside
+## a deferred editor call where global_transform may not be flushed yet.
+func _local_aabb(root: Node3D) -> AABB:
+	return _mesh_aabb_in_space(root, root)
+
+
+## AABB of `box` after applying a transform (corner-by-corner).
+func _aabb_transformed(box: AABB, xform: Transform3D) -> AABB:
+	var out := AABB()
+	var first := true
+	for c in _aabb_corners(box):
+		var p: Vector3 = xform * c
+		if first:
+			out = AABB(p, Vector3.ZERO)
+			first = false
+		else:
+			out = out.expand(p)
+	return out
+
+
 func _pick_sofa_y_rotation(s: Node3D) -> float:
-	# Long edge should run along room Z (parallel to the west wall).
+	# Long edge should run along room Z (parallel to the west wall). Tested via
+	# arithmetic on the local bounds (reliable in this deferred editor call).
+	var lbox := _local_aabb(s)
 	var best_deg := 0.0
 	var best_len := 0.0
 	for deg in [0.0, 90.0, -90.0, 180.0]:
-		s.rotation_degrees = Vector3(0.0, deg, 0.0)
-		var box := _mesh_aabb_in_space(s, self)
-		if box.size.z > best_len:
-			best_len = box.size.z
+		var b := Basis.from_euler(Vector3(0.0, deg_to_rad(deg), 0.0))
+		var rb := _aabb_transformed(lbox, Transform3D(b, Vector3.ZERO))
+		if rb.size.z > best_len:
+			best_len = rb.size.z
 			best_deg = deg
 	return best_deg
 
@@ -381,23 +473,32 @@ func _finalize_sofa_glb() -> void:
 	var s: Node3D = get_node_or_null("Sofa") as Node3D
 	if s == null:
 		return
-	s.rotation_degrees = Vector3(0.0, _pick_sofa_y_rotation(s), 0.0)
-	var box := _mesh_aabb_in_space(s, self)
+	var rot := _pick_sofa_y_rotation(s)
+	var lbox := _local_aabb(s)
+	# Rotated (scale 1) bounds → per-axis scale to hit the target size.
+	var rbox := _aabb_transformed(lbox, Transform3D(Basis.from_euler(Vector3(0.0, deg_to_rad(rot), 0.0)), Vector3.ZERO))
 	var sc := Vector3(
-		SOFA_TARGET_SIZE.x / maxf(box.size.x, 0.001),
-		SOFA_TARGET_SIZE.y / maxf(box.size.y, 0.001),
-		SOFA_TARGET_SIZE.z / maxf(box.size.z, 0.001),
+		SOFA_TARGET_SIZE.x / maxf(rbox.size.x, 0.001),
+		SOFA_TARGET_SIZE.y / maxf(rbox.size.y, 0.001),
+		SOFA_TARGET_SIZE.z / maxf(rbox.size.z, 0.001),
 	)
+	s.rotation_degrees = Vector3(0.0, rot, 0.0)
 	s.scale = sc
-	box = _mesh_aabb_in_space(s, self)
+	# Final bounds at position 0, from the just-set LOCAL basis (reliable — only
+	# global_transform is flaky inside this deferred call, the local one is not).
+	var box := _aabb_transformed(lbox, Transform3D(s.transform.basis, Vector3.ZERO))
 	var wall_x := -HALF_W + SOFA_WALL_GAP
-	s.position = Vector3(
+	var s_pos := Vector3(
 		wall_x - box.position.x,
 		-box.position.y,
 		SOFA_CENTER_Z - (box.position.z + box.size.z * 0.5),
 	)
-	_collider(s, box.size, box.get_center(), "SofaBody")
-	_attach_sofa_accessories(s)
+	s.position = s_pos
+	# NOTE: the sofa's collision lives as a permanent, hand-editable "SofaBody"
+	# node in main.tscn (under Main), so it is NOT regenerated here — tweak it by
+	# hand and it stays put across furniture rebuilds.
+	# Sofa bounds in room space (pos-0 bounds shifted by the translation).
+	_attach_sofa_accessories(s, AABB(box.position + s_pos, box.size))
 
 
 func _style_glb_meshes(root: Node3D, mat: Material) -> void:
@@ -405,10 +506,9 @@ func _style_glb_meshes(root: Node3D, mat: Material) -> void:
 		mi.material_override = mat
 
 
-func _sofa_seat_metrics(sofa: Node3D) -> Dictionary:
-	# Measured in ROOM space: this already bakes in the sofa's (non-uniform)
-	# scale + rotation, so accessories parented to `self` stay un-sheared.
-	var b := _mesh_aabb_in_space(sofa, self)
+func _sofa_seat_metrics(b: AABB) -> Dictionary:
+	# `b` is the sofa's room-space bounds (already includes its non-uniform scale
+	# + rotation), so accessories parented to `self` stay un-sheared.
 	# West wall = min X; seat cushion is the forward (+X, room-facing) part.
 	return {
 		"top_y": b.position.y + b.size.y * 0.42,
@@ -419,20 +519,24 @@ func _sofa_seat_metrics(sofa: Node3D) -> Dictionary:
 	}
 
 
+func _euler_basis(rot_deg: Vector3) -> Basis:
+	return Basis.from_euler(Vector3(deg_to_rad(rot_deg.x), deg_to_rad(rot_deg.y), deg_to_rad(rot_deg.z)))
+
+
 func _pick_flat_rotation_deg(item: Node3D, parent: Node3D) -> Vector3:
-	var best := Vector3.ZERO
-	var best_h := INF
+	# Lay the item as flat as possible (smallest Y), tested on the local bounds.
 	parent.add_child(item)
 	item.position = Vector3.ZERO
+	var lbox := _local_aabb(item)
+	var best := Vector3.ZERO
+	var best_h := INF
 	for rot: Vector3 in [
 		Vector3.ZERO,
 		Vector3(-90, 0, 0), Vector3(90, 0, 0),
 		Vector3(0, -90, 0), Vector3(0, 90, 0),
 		Vector3(0, 0, -90), Vector3(0, 0, 90),
 	]:
-		item.rotation_degrees = rot
-		item.scale = Vector3.ONE * GLB_UNIT_SCALE
-		var h: float = _mesh_aabb_in_space(item, parent).size.y
+		var h: float = _aabb_transformed(lbox, Transform3D(_euler_basis(rot), Vector3.ZERO)).size.y
 		if h < best_h:
 			best_h = h
 			best = rot
@@ -441,15 +545,16 @@ func _pick_flat_rotation_deg(item: Node3D, parent: Node3D) -> Vector3:
 
 
 func _fit_glb_flat_on_seat(item: Node3D, parent: Node3D, xz_size: Vector2) -> AABB:
-	_pick_flat_rotation_deg(item, parent)
-	var box := _mesh_aabb_in_space(item, parent)
-	var src := maxf(box.size.x, box.size.z)
+	var rot := _pick_flat_rotation_deg(item, parent)
+	var lbox := _local_aabb(item)
+	var rbox := _aabb_transformed(lbox, Transform3D(_euler_basis(rot), Vector3.ZERO))
+	var src := maxf(rbox.size.x, rbox.size.z)
 	if src < 0.02:
-		src = maxf(box.size.x, maxf(box.size.y, box.size.z))
+		src = maxf(rbox.size.x, maxf(rbox.size.y, rbox.size.z))
 	var dst := maxf(xz_size.x, xz_size.y)
-	var s := dst / maxf(src, 0.001)
-	item.scale = Vector3.ONE * (GLB_UNIT_SCALE * s)
-	return _mesh_aabb_in_space(item, parent)
+	item.scale = Vector3.ONE * (dst / maxf(src, 0.001))
+	# Final bounds at position 0, from the just-set local basis (reliable).
+	return _aabb_transformed(lbox, Transform3D(item.transform.basis, Vector3.ZERO))
 
 
 func _seat_bottom_position(box: AABB, seat: Dictionary, offset: Vector3) -> Vector3:
@@ -461,11 +566,9 @@ func _seat_bottom_position(box: AABB, seat: Dictionary, offset: Vector3) -> Vect
 	)
 
 
-func _attach_sofa_accessories(sofa: Node3D) -> void:
+func _attach_sofa_accessories(sofa: Node3D, sb: AABB) -> void:
 	var blue: Material = _mats["sofa_blue"]
-	var seat := _sofa_seat_metrics(sofa)
-	# Real-world (room-space) footprint of the sofa, so sizes are in metres.
-	var sb := _mesh_aabb_in_space(sofa, self)
+	var seat := _sofa_seat_metrics(sb)
 	var pillow_xz := Vector2(sb.size.x * 0.42, sb.size.z * 0.22)    # ~0.46 × 0.52 m cushion
 
 	# Parent to `self` (uniform scale) — NOT to the non-uniformly scaled sofa,
@@ -506,7 +609,7 @@ func _build_sofa_placeholder() -> void:
 		for lz in [cz - 0.78, cz + 0.78]:
 			_cyl(s, 0.025, 0.09, Vector3(lx, 0.045, lz), _mats["chrome"], "Leg")
 	_collider(s, Vector3(0.76, 0.52, 1.90), Vector3(cx, 0.26, cz), "SofaBody")
-	_attach_sofa_accessories(s)
+	_attach_sofa_accessories(s, AABB(Vector3(cx - 0.38, 0.0, cz - 0.95), Vector3(0.76, 0.52, 1.90)))
 
 
 func _build_pullup_bar() -> void:
@@ -521,23 +624,178 @@ func _build_pullup_bar() -> void:
 
 
 func _build_window() -> void:
-	# Balcony window on the north wall (-Z): glow panel, tulle, side drapes.
+	# Balcony block on the north wall (−Z): a fixed window on the left + a
+	# full-height PVC balcony door on the right. All faux/visual, built in front
+	# of the solid wall (bright daylight glows through the glass).
 	var win := Node3D.new()
-	win.name = "Window"
+	win.name = "Balcony"
 	add_child(win)
-	var z := -HALF_L
-	_box(win, Vector3(1.5, 1.5, 0.02), Vector3(0, 1.5, z + 0.02), _mats["glow"], "Daylight")
-	var tl := _decal(win, "res://tex_tulle.jpg", Vector2(1.6, 1.7), Vector3(0, 1.5, z + 0.14), Vector3.ZERO, "Tulle")
+	var z := -HALF_L                 # wall plane
+	var glow_z := z + 0.02
+	var glass_z := z + 0.06
+	var fr_z := z + 0.10             # frames sit in front of the glass
+	var x0 := -0.85                  # block left edge
+	var x1 := 0.85                   # block right edge
+	var mull := -0.05               # divider between window and door
+	var top := 2.15                 # block top
+	var sill_y := 0.85              # window sill height (left)
+	var panel_top := 0.95           # door solid-panel top (right)
+	var pvc: Material = _mats["pvc"]
+	var glass: Material = _mats["glass_win"]
+
+	# Bright daylight behind the whole block (only shows through the glass).
+	_box(win, Vector3(x1 - x0, top, 0.02), Vector3((x0 + x1) * 0.5, top * 0.5, glow_z), _mats["glow"], "Daylight")
+
+	# --- Left: fixed window (glazed above the sill) ---
+	var wl := mull - x0
+	var xcw := (x0 + mull) * 0.5
+	_box(win, Vector3(wl, top - sill_y, 0.015), Vector3(xcw, (sill_y + top) * 0.5, glass_z), glass, "WindowGlass")
+	_box(win, Vector3(wl + 0.06, 0.05, 0.20), Vector3(xcw, sill_y, fr_z + 0.04), pvc, "Sill")
+
+	# --- Right: balcony door (GLB model if present, else a procedural leaf) ---
+	var wd := x1 - mull
+	var xcd := (mull + x1) * 0.5
+	var has_door_glb := ResourceLoader.exists(BALCONY_DOOR_GLB)
+	if has_door_glb:
+		var bdoor: Node3D = (load(BALCONY_DOOR_GLB) as PackedScene).instantiate()
+		bdoor.name = "BalconyDoor"
+		win.add_child(bdoor)
+		call_deferred("_finalize_balcony_door", bdoor, xcd, z)
+	else:
+		_box(win, Vector3(wd - 0.10, panel_top - 0.06, 0.04), Vector3(xcd, panel_top * 0.5 + 0.03, glass_z + 0.01), pvc, "DoorPanel")
+		_box(win, Vector3(wd - 0.10, top - panel_top - 0.06, 0.015), Vector3(xcd, (panel_top + top) * 0.5, glass_z), glass, "DoorGlass")
+		_box(win, Vector3(0.03, 0.20, 0.04), Vector3(mull + 0.08, 1.0, fr_z + 0.03), _mats["chrome"], "Handle")
+
+	# --- White PVC frame: outer jambs/head/base + mullion + transoms ---
+	var f := 0.05
+	_box(win, Vector3(f, top, 0.06), Vector3(x0, top * 0.5, fr_z), pvc, "JambL")
+	_box(win, Vector3(f, top, 0.06), Vector3(x1, top * 0.5, fr_z), pvc, "JambR")
+	_box(win, Vector3(x1 - x0 + f, f, 0.06), Vector3((x0 + x1) * 0.5, top, fr_z), pvc, "Head")
+	_box(win, Vector3(x1 - x0 + f, f, 0.06), Vector3((x0 + x1) * 0.5, 0.02, fr_z), pvc, "Base")
+	_box(win, Vector3(f, top, 0.06), Vector3(mull, top * 0.5, fr_z), pvc, "Mullion")
+	_box(win, Vector3(wl, f, 0.06), Vector3(xcw, sill_y, fr_z), pvc, "WindowTransom")
+	if not has_door_glb:
+		_box(win, Vector3(wd, f, 0.06), Vector3(xcd, panel_top, fr_z), pvc, "DoorTransom")
+
+	# Net curtain over the glazing. The side drapes + valance are NOT built here
+	# anymore — hang the curtains.glb model by hand as a permanent node under Main.
+	var tl := _decal(win, "res://tex_tulle.jpg", Vector2(1.5, 1.35), Vector3(0, 1.5, fr_z + 0.02), Vector3.ZERO, "Tulle")
 	tl.material_override = _mats["tulle"]
-	# Brown side drapes + valance.
-	for dx in [-0.85, 0.85]:
-		_box(win, Vector3(0.38, 2.2, 0.06), Vector3(dx, 1.35, z + 0.18), _mats["curtain"], "Drape")
-	_box(win, Vector3(1.95, 0.28, 0.12), Vector3(0, 2.45, z + 0.16), _mats["curtain"], "Valance")
-	# White sill.
-	_box(win, Vector3(1.7, 0.06, 0.12), Vector3(0, 0.72, z + 0.1), _mats["chair"], "Sill")
+
+
+func _build_radiator() -> void:
+	# Optional radiator under the left balcony window (auto-fit GLB).
+	if not ResourceLoader.exists(RADIATOR_GLB):
+		return
+	var r: Node3D = (load(RADIATOR_GLB) as PackedScene).instantiate()
+	r.name = "Radiator"
+	add_child(r)
+	call_deferred("_finalize_radiator", r)
+
+
+func _finalize_radiator(r: Node3D) -> void:
+	if not is_instance_valid(r):
+		return
+	# Reliable raw bounds (local space), then scale/position by arithmetic — no
+	# re-measuring against the world (which is flaky in this deferred editor call).
+	var lbox := _local_aabb(r)
+	# Auto-orient: put the WIDEST horizontal side along the wall (room X), so the
+	# fit divides by the real width (not the thin depth) and never blows up.
+	var yaw := RADIATOR_YAW + (90.0 if lbox.size.z > lbox.size.x else 0.0)
+	var basis := Basis.from_euler(Vector3(0.0, deg_to_rad(yaw), 0.0))
+	var rbox := _aabb_transformed(lbox, Transform3D(basis, Vector3.ZERO))
+	var k := RADIATOR_TARGET_W / maxf(rbox.size.x, 0.001)
+	var sbox := AABB(rbox.position * k, rbox.size * k)   # final bounds at position 0
+	r.rotation_degrees = Vector3(0.0, yaw, 0.0)
+	r.scale = Vector3.ONE * k
+	var xcw := -0.45                  # centred under the left window
+	var wall_z := -HALF_L + 0.05      # back close to the wall
+	r.position = Vector3(
+		xcw - sbox.get_center().x,
+		0.15 - sbox.position.y,       # mounted a little off the floor
+		wall_z - sbox.position.z,
+	)
+
+
+func _finalize_balcony_door(door: Node3D, x_center: float, wall_z: float) -> void:
+	# `door` is a child of the Balcony node, which sits at the origin, so room-space
+	# measurements map straight onto its local position.
+	if not is_instance_valid(door):
+		return
+	var lbox := _local_aabb(door)
+	var basis := Basis.from_euler(Vector3(0.0, deg_to_rad(BALCONY_DOOR_YAW), 0.0))
+	var rbox := _aabb_transformed(lbox, Transform3D(basis, Vector3.ZERO))
+	var k := BALCONY_DOOR_TARGET_H / maxf(rbox.size.y, 0.001)
+	var sbox := AABB(rbox.position * k, rbox.size * k)
+	door.rotation_degrees = Vector3(0.0, BALCONY_DOOR_YAW, 0.0)
+	door.scale = Vector3.ONE * k
+	door.position = Vector3(
+		x_center - sbox.get_center().x,
+		0.0 - sbox.position.y,                 # bottom on the floor
+		(wall_z + 0.08) - sbox.get_center().z, # standing in the opening, near the wall
+	)
+
+
+func _build_curtains() -> void:
+	# Optional curtains over the balcony window (auto-fit GLB).
+	if not ResourceLoader.exists(CURTAINS_GLB):
+		return
+	var c: Node3D = (load(CURTAINS_GLB) as PackedScene).instantiate()
+	c.name = "Curtains"
+	add_child(c)
+	call_deferred("_finalize_curtains", c)
+
+
+func _finalize_curtains(c: Node3D) -> void:
+	if not is_instance_valid(c):
+		return
+	var lbox := _local_aabb(c)
+	var basis := Basis.from_euler(Vector3(0.0, deg_to_rad(CURTAINS_YAW), 0.0))
+	var rbox := _aabb_transformed(lbox, Transform3D(basis, Vector3.ZERO))
+	var k := CURTAINS_TARGET_H / maxf(rbox.size.y, 0.001)
+	var sbox := AABB(rbox.position * k, rbox.size * k)
+	c.rotation_degrees = Vector3(0.0, CURTAINS_YAW, 0.0)
+	c.scale = Vector3.ONE * k
+	var back_z := -HALF_L + 0.16       # hang just in front of the window frame
+	c.position = Vector3(
+		0.0 - sbox.get_center().x,                          # centred on the window
+		CURTAINS_TOP_Y - (sbox.position.y + sbox.size.y),   # top at CURTAINS_TOP_Y
+		back_z - sbox.position.z,
+	)
 
 
 func _build_chandelier() -> void:
+	# Prefer a real GLB lamp if present; otherwise the procedural chrome version.
+	if ResourceLoader.exists(CHANDELIER_GLB):
+		_build_chandelier_from_glb()
+		return
+	_build_chandelier_procedural()
+
+
+func _build_chandelier_from_glb() -> void:
+	var c: Node3D = (load(CHANDELIER_GLB) as PackedScene).instantiate()
+	c.name = "Chandelier"
+	add_child(c)
+	# Defer sizing/placement so the instanced GLB's transforms are settled.
+	call_deferred("_finalize_chandelier", c)
+
+
+func _finalize_chandelier(c: Node3D) -> void:
+	if not is_instance_valid(c):
+		return
+	var lbox := _local_aabb(c)
+	var k := CHANDELIER_TARGET_H / maxf(lbox.size.y, 0.001)
+	var sbox := AABB(lbox.position * k, lbox.size * k)
+	c.scale = Vector3.ONE * k
+	# Centre on the room; hang so the model's TOP meets the ceiling, then drop.
+	c.position = Vector3(
+		-sbox.get_center().x,
+		CHANDELIER_CEILING_Y - (sbox.position.y + sbox.size.y) - CHANDELIER_DROP,
+		-sbox.get_center().z,
+	)
+
+
+func _build_chandelier_procedural() -> void:
 	# Chrome ceiling light with three green glass shades, centred under the lamp.
 	var ch := Node3D.new()
 	ch.name = "Chandelier"
