@@ -3,6 +3,7 @@
 [ext_resource type="PackedScene" path="res://player.tscn" id="1_player"]
 [ext_resource type="Script" uid="uid://di31ty3xiqiki" path="res://interactable.gd" id="2_inter"]
 [ext_resource type="Script" uid="uid://cvl0pfs7xddma" path="res://furniture.gd" id="3_furn"]
+[ext_resource type="Script" uid="uid://dmck57bcsplil" path="res://clock_tick.gd" id="4_clock_tick"]
 [ext_resource type="Script" uid="uid://d0rktnmgc6n2e" path="res://computer_terminal.gd" id="4_terminal"]
 [ext_resource type="Texture2D" uid="uid://v5bycag7a5hf" path="res://tex_wallpaper.jpg" id="4_wall"]
 [ext_resource type="Texture2D" uid="uid://qyq67o3xtig2" path="res://tex_floor.jpg" id="5_floor"]
@@ -24,6 +25,7 @@
 [ext_resource type="Texture2D" uid="uid://6g1awfatymcc" path="res://decal_worldmap.png" id="15_htxhm"]
 [ext_resource type="Texture2D" uid="uid://cyehgudfderom" path="res://decal_clock.png" id="16_jq2sk"]
 [ext_resource type="Texture2D" uid="uid://diuvqq3w7gqja" path="res://decal_frames.png" id="17_4k2k6"]
+[ext_resource type="AudioStream" uid="uid://8vyqn67xrp1h" path="res://sound/clock.mp3" id="17_clock"]
 [ext_resource type="PackedScene" uid="uid://dyqs67l4rms57" path="res://models/pillow.glb" id="18_0rl1p"]
 [ext_resource type="PackedScene" uid="uid://cbwym752r8bt5" path="res://models/korobka_dlya_petard_tex.glb" id="21_lswn8"]
 
@@ -104,8 +106,11 @@ texture_filter = 1
 [sub_resource type="QuadMesh" id="ScreenQuad"]
 size = Vector2(27.5, 20.5)
 
-[sub_resource type="ConcavePolygonShape3D" id="ComputerTerminalShape"]
-data = PackedVector3Array(-13.75, -10.25, 0, 13.75, -10.25, 0, 13.75, 10.25, 0, -13.75, -10.25, 0, 13.75, 10.25, 0, -13.75, 10.25, 0)
+[sub_resource type="BoxShape3D" id="ComputerTerminalShape"]
+size = Vector3(27.5, 20.5, 2)
+
+[sub_resource type="BoxShape3D" id="ComputerPowerButtonShape"]
+size = Vector3(5, 5, 2)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ok6jj"]
 albedo_texture = ExtResource("9_lswn8")
@@ -455,6 +460,31 @@ target_terminal_path = NodePath("../../../../ComputerTerminal")
 [node name="Collision" type="CollisionShape3D" parent="Furniture/Desk/Computer/ComputerTerminalHitbox" unique_id=491312772]
 shape = SubResource("ComputerTerminalShape")
 
+[node name="ComputerPowerButtonHitbox" type="StaticBody3D" parent="Furniture/Desk/Computer" unique_id=1715605992]
+transform = Transform3D(0.9974, 0, 0.072, 0, 1, 0, -0.072, 0, 0.9974, 40.25, 22.1, 0.15)
+script = ExtResource("2_inter")
+kind = 4
+prompt_text = "POWER COMPUTER"
+target_terminal_path = NodePath("../../../../ComputerTerminal")
+
+[node name="Collision" type="CollisionShape3D" parent="Furniture/Desk/Computer/ComputerPowerButtonHitbox" unique_id=372804366]
+shape = SubResource("ComputerPowerButtonShape")
+
+[node name="ComputerPowerLed" type="OmniLight3D" parent="Furniture/Desk/Computer" unique_id=458207033]
+transform = Transform3D(0.9974, 0, 0.072, 0, 1, 0, -0.072, 0, 0.9974, 43.69, 24.35, 0.55)
+light_color = Color(0.1, 1, 0.22, 1)
+light_energy = 0.0
+omni_range = 0.18
+
+[node name="ComputerActivityLed" type="OmniLight3D" parent="Furniture/Desk/Computer" unique_id=952214518]
+transform = Transform3D(0.9974, 0, 0.072, 0, 1, 0, -0.072, 0, 0.9974, 43.69, 26.43, 0.55)
+light_color = Color(1, 0.08, 0.04, 1)
+light_energy = 0.0
+omni_range = 0.16
+
+[node name="ComputerDriveAudioOrigin" type="Node3D" parent="Furniture/Desk/Computer" unique_id=572409341]
+transform = Transform3D(0.9974, 0, 0.072, 0, 1, 0, -0.072, 0, 0.9974, 26, 23, -6)
+
 [node name="Shelf" type="Node3D" parent="Furniture" unique_id=1206649101]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.31149507)
 
@@ -631,6 +661,13 @@ transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 1.29
 material_override = SubResource("StandardMaterial3D_jx0wj")
 mesh = SubResource("QuadMesh_kkkcx")
 
+[node name="TickAudio" type="AudioStreamPlayer3D" parent="Furniture/Clock" unique_id=305686028]
+stream = ExtResource("17_clock")
+volume_db = -14.351
+unit_size = 0.55
+max_distance = 10.0
+script = ExtResource("4_clock_tick")
+
 [node name="Portrait" type="MeshInstance3D" parent="Furniture" unique_id=1500106693]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 1.295, 1.68, 1.35)
 material_override = SubResource("StandardMaterial3D_34ol3")
@@ -645,6 +682,9 @@ transform = Transform3D(0.1, 0, 0, 0, -4.371139e-09, -0.1, 0, 0.1, -4.371139e-09
 [node name="ComputerTerminal" type="Node" parent="." unique_id=634651961]
 script = ExtResource("4_terminal")
 screen_path = NodePath("../Furniture/Desk/Computer/ComputerScreen")
+power_led_path = NodePath("../Furniture/Desk/Computer/ComputerPowerLed")
+activity_led_path = NodePath("../Furniture/Desk/Computer/ComputerActivityLed")
+drive_audio_origin_path = NodePath("../Furniture/Desk/Computer/ComputerDriveAudioOrigin")
 player_path = NodePath("../Player")
 crosshair_path = NodePath("../UI/Crosshair")
 prompt_path = NodePath("../UI/InteractionPrompt")

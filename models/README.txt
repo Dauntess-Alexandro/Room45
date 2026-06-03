@@ -47,3 +47,5 @@ and rotated by COMPUTER_YAW. The CRT terminal is the "ComputerScreen" child
 under Furniture/Desk/Computer in main.tscn, so it stays glued to the GLB when
 the computer is moved or rotated. At runtime computer_terminal.gd replaces its
 material with a SubViewport terminal texture.
+The existing tower power button has a hidden "ComputerPowerButtonHitbox" child
+that toggles terminal power and starts the boot sequence.

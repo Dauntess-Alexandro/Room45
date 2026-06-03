@@ -10,10 +10,11 @@ extends StaticBody3D
 ##   LIGHT_SWITCH -> toggles the energy of the Light3D at `target_light_path`.
 ##   PICKUP       -> removes itself from the scene.
 ##   COMPUTER     -> opens the in-world CRT terminal.
+##   COMPUTER_POWER -> toggles the terminal power state.
 ##
 ## The player reads `prompt_text` to populate the on-screen interaction prompt.
 
-enum Kind { DOOR, LIGHT_SWITCH, PICKUP, COMPUTER }
+enum Kind { DOOR, LIGHT_SWITCH, PICKUP, COMPUTER, COMPUTER_POWER }
 
 @export var kind: Kind = Kind.DOOR
 ## Shown next to the "[E]" indicator in the HUD.
@@ -51,6 +52,8 @@ func interact(_by: Node = null) -> void:
 			_pickup()
 		Kind.COMPUTER:
 			_use_computer(_by)
+		Kind.COMPUTER_POWER:
+			_toggle_computer_power(_by)
 
 
 # --- Door --------------------------------------------------------------------
@@ -112,3 +115,12 @@ func _use_computer(by: Node = null) -> void:
 		return
 	if target.has_method("open_terminal"):
 		target.call("open_terminal", by)
+
+
+func _toggle_computer_power(by: Node = null) -> void:
+	var target := get_node_or_null(target_terminal_path)
+	if target == null:
+		push_warning("Interactable '%s': target_terminal_path is not set or not found." % name)
+		return
+	if target.has_method("toggle_power"):
+		target.call("toggle_power", by)
