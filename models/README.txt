@@ -42,7 +42,8 @@ instanced mesh, set it by hand on the Pillow's MeshInstance in the editor.
 
 Computer + screen
 -----------------
-File: old_computer.glb — one PC on the desk, auto-scaled to COMPUTER_TARGET_H
-and rotated by COMPUTER_YAW. The glowing CRT (tex_monitor.jpg) is a SEPARATE
-hand-placed node "ComputerScreen" in main.tscn — select & drag it onto the
-monitor glass; size lives on its ScreenQuad mesh.
+File: retro_computer.glb — one PC on the desk, auto-scaled to COMPUTER_TARGET_H
+and rotated by COMPUTER_YAW. The CRT terminal is the "ComputerScreen" child
+under Furniture/Desk/Computer in main.tscn, so it stays glued to the GLB when
+the computer is moved or rotated. At runtime computer_terminal.gd replaces its
+material with a SubViewport terminal texture.

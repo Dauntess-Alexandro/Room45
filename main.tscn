@@ -3,18 +3,18 @@
 [ext_resource type="PackedScene" path="res://player.tscn" id="1_player"]
 [ext_resource type="Script" uid="uid://di31ty3xiqiki" path="res://interactable.gd" id="2_inter"]
 [ext_resource type="Script" uid="uid://cvl0pfs7xddma" path="res://furniture.gd" id="3_furn"]
+[ext_resource type="Script" uid="uid://d0rktnmgc6n2e" path="res://computer_terminal.gd" id="4_terminal"]
 [ext_resource type="Texture2D" uid="uid://v5bycag7a5hf" path="res://tex_wallpaper.jpg" id="4_wall"]
 [ext_resource type="Texture2D" uid="uid://qyq67o3xtig2" path="res://tex_floor.jpg" id="5_floor"]
 [ext_resource type="Texture2D" uid="uid://b1kby3daobgjg" path="res://tex_ceiling.jpg" id="6_ceil"]
 [ext_resource type="Texture2D" uid="uid://1vl85axgj05h" path="res://tex_rug.jpg" id="6_d13ii"]
 [ext_resource type="Texture2D" uid="uid://ou2ifn6btnov" path="res://tex_countertop.jpg" id="7_1u8w0"]
 [ext_resource type="Texture2D" uid="uid://dkq4qxftsfmvo" path="res://decal_door.png" id="7_door"]
-[ext_resource type="PackedScene" uid="uid://c77sftsa8ewy1" path="res://models/old_computer.glb" id="8_0odxb"]
+[ext_resource type="PackedScene" uid="uid://bqatecgnftwxh" path="res://models/retro_computer.glb" id="8_0odxb"]
 [ext_resource type="Shader" uid="uid://voa8q1tw2vsm" path="res://retro_vhs.gdshader" id="8_shader"]
 [ext_resource type="Texture2D" uid="uid://depk5nlaqqx1h" path="res://tex_shelf_white.jpg" id="9_lswn8"]
 [ext_resource type="PackedScene" path="res://pause_menu.tscn" id="9_pause"]
 [ext_resource type="Texture2D" uid="uid://mkd6spneopyj" path="res://tex_wardrobe.jpg" id="10_a6jrf"]
-[ext_resource type="Texture2D" uid="uid://b1v78f4uyh4lj" path="res://tex_monitor.jpg" id="10_monitor"]
 [ext_resource type="PackedScene" uid="uid://dke22eci2mny1" path="res://models/sofa.glb" id="11_xuqvo"]
 [ext_resource type="PackedScene" uid="uid://hjbf06i2oekg" path="res://models/balcony_door.glb" id="12_0odxb"]
 [ext_resource type="Texture2D" uid="uid://b6cfm12utqsay" path="res://tex_tulle.jpg" id="12_qsp4k"]
@@ -92,6 +92,20 @@ size = Vector3(0.05, 0.72, 0.05)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_0rl1p"]
 size = Vector3(0.7, 0.74, 1.8)
+
+[sub_resource type="StandardMaterial3D" id="ScreenMat"]
+render_priority = 10
+cull_mode = 2
+no_depth_test = true
+shading_mode = 0
+albedo_color = Color(0, 0, 0, 1)
+texture_filter = 1
+
+[sub_resource type="QuadMesh" id="ScreenQuad"]
+size = Vector2(27.5, 20.5)
+
+[sub_resource type="ConcavePolygonShape3D" id="ComputerTerminalShape"]
+data = PackedVector3Array(-13.75, -10.25, 0, 13.75, -10.25, 0, 13.75, 10.25, 0, -13.75, -10.25, 0, 13.75, 10.25, 0, -13.75, 10.25, 0)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ok6jj"]
 albedo_texture = ExtResource("9_lswn8")
@@ -245,18 +259,6 @@ texture_filter = 1
 
 [sub_resource type="QuadMesh" id="QuadMesh_c2n8d"]
 size = Vector2(0.35, 0.42)
-
-[sub_resource type="StandardMaterial3D" id="ScreenMat"]
-render_priority = 10
-cull_mode = 2
-shading_mode = 0
-albedo_texture = ExtResource("10_monitor")
-uv1_scale = Vector3(-1, 1, 1)
-uv1_offset = Vector3(1, 0, 0)
-texture_filter = 1
-
-[sub_resource type="QuadMesh" id="ScreenQuad"]
-size = Vector2(0.292, 0.222)
 
 [sub_resource type="BoxShape3D" id="SofaShape"]
 size = Vector3(1.07, 0.30947265, 2.42)
@@ -436,7 +438,22 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.96, 0.37, -1.2)
 shape = SubResource("BoxShape3D_0rl1p")
 
 [node name="Computer" parent="Furniture/Desk" unique_id=168192273 instance=ExtResource("8_0odxb")]
-transform = Transform3D(-1.084255, 0, -9.478858e-08, 0, 1.084255, 0, 9.478858e-08, 0, -1.084255, 0.9557606, 0.76000005, -1.318258)
+transform = Transform3D(0, 0, -0.008522919, 0, 0.008522919, 0, 0.008522919, 0, 0, 0.9081304, 0.76198864, -1.194975)
+
+[node name="ComputerScreen" type="MeshInstance3D" parent="Furniture/Desk/Computer" unique_id=1988444363]
+transform = Transform3D(1.4254757, -0.030206045, 0.25516057, 0.005263181, 1.6747696, 0.110270336, -0.26550418, -0.12897487, 1.3721278, -23.013, 29.048851, -9.787979)
+material_override = SubResource("ScreenMat")
+mesh = SubResource("ScreenQuad")
+
+[node name="ComputerTerminalHitbox" type="StaticBody3D" parent="Furniture/Desk/Computer" unique_id=1570595863]
+transform = Transform3D(1.4254757, -0.030206045, 0.25516057, 0.005263181, 1.6747696, 0.110270336, -0.26550418, -0.12897487, 1.3721278, -23.013, 29.048851, -9.787979)
+script = ExtResource("2_inter")
+kind = 3
+prompt_text = "USE COMPUTER"
+target_terminal_path = NodePath("../../../../ComputerTerminal")
+
+[node name="Collision" type="CollisionShape3D" parent="Furniture/Desk/Computer/ComputerTerminalHitbox" unique_id=491312772]
+shape = SubResource("ComputerTerminalShape")
 
 [node name="Shelf" type="Node3D" parent="Furniture" unique_id=1206649101]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.31149507)
@@ -622,13 +639,15 @@ mesh = SubResource("QuadMesh_c2n8d")
 [node name="Pillow" parent="Furniture" unique_id=1944644636 instance=ExtResource("18_0rl1p")]
 transform = Transform3D(0.002331109, 0, 0, 0, 0.002331109, 0, 0, 0, 0.002331109, -0.66886914, 0.54023117, -1.178592)
 
-[node name="PetardBox" type="Node3D" parent="Furniture" unique_id=237179058 instance=ExtResource("21_lswn8")]
+[node name="PetardBox" parent="Furniture" unique_id=237179058 instance=ExtResource("21_lswn8")]
 transform = Transform3D(0.1, 0, 0, 0, -4.371139e-09, -0.1, 0, 0.1, -4.371139e-09, 1.0364166, 0.79443, 0.3929013)
 
-[node name="ComputerScreen" type="MeshInstance3D" parent="." unique_id=1988444363]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.99369323, 0.97913116, -1.0146875)
-material_override = SubResource("ScreenMat")
-mesh = SubResource("ScreenQuad")
+[node name="ComputerTerminal" type="Node" parent="." unique_id=634651961]
+script = ExtResource("4_terminal")
+screen_path = NodePath("../Furniture/Desk/Computer/ComputerScreen")
+player_path = NodePath("../Player")
+crosshair_path = NodePath("../UI/Crosshair")
+prompt_path = NodePath("../UI/InteractionPrompt")
 
 [node name="SofaBody" type="StaticBody3D" parent="." unique_id=757015445]
 

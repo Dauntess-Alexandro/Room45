@@ -9,10 +9,11 @@ extends StaticBody3D
 ##   DOOR         -> swings around its local Y axis (hinge at node origin).
 ##   LIGHT_SWITCH -> toggles the energy of the Light3D at `target_light_path`.
 ##   PICKUP       -> removes itself from the scene.
+##   COMPUTER     -> opens the in-world CRT terminal.
 ##
 ## The player reads `prompt_text` to populate the on-screen interaction prompt.
 
-enum Kind { DOOR, LIGHT_SWITCH, PICKUP }
+enum Kind { DOOR, LIGHT_SWITCH, PICKUP, COMPUTER }
 
 @export var kind: Kind = Kind.DOOR
 ## Shown next to the "[E]" indicator in the HUD.
@@ -25,6 +26,9 @@ enum Kind { DOOR, LIGHT_SWITCH, PICKUP }
 @export_group("Light Switch")
 @export var target_light_path: NodePath      ## Light3D to toggle
 @export var default_light_energy: float = 2.0
+
+@export_group("Computer")
+@export var target_terminal_path: NodePath   ## Node with open_terminal(player)
 
 # --- Internal state ----------------------------------------------------------
 var _door_open: bool = false
@@ -45,6 +49,8 @@ func interact(_by: Node = null) -> void:
 			_toggle_light()
 		Kind.PICKUP:
 			_pickup()
+		Kind.COMPUTER:
+			_use_computer(_by)
 
 
 # --- Door --------------------------------------------------------------------
@@ -96,3 +102,13 @@ func _toggle_light() -> void:
 func _pickup() -> void:
 	# Hook for VFX/SFX here (particles, sound) before removal if desired.
 	queue_free()
+
+
+# --- Computer ----------------------------------------------------------------
+func _use_computer(by: Node = null) -> void:
+	var target := get_node_or_null(target_terminal_path)
+	if target == null:
+		push_warning("Interactable '%s': target_terminal_path is not set or not found." % name)
+		return
+	if target.has_method("open_terminal"):
+		target.call("open_terminal", by)

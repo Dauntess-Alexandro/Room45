@@ -29,10 +29,10 @@ const GLB_UNIT_SCALE := 0.001
 
 const SCREEN_SIZE := Vector2(0.46, 0.30)
 
-## Single old PC model on the desk (replaces the two procedural CRT boxes).
-const COMPUTER_GLB := "res://models/old_computer.glb"
+## Single retro PC model on the desk (replaces the two procedural CRT boxes).
+const COMPUTER_GLB := "res://models/retro_computer.glb"
 const COMPUTER_TARGET_H := 0.42   # overall height in metres (tweak to taste)
-const COMPUTER_YAW := 180.0       # face the screen into the room (−X); flip 180 if backwards
+const COMPUTER_YAW := 90.0        # face the screen toward the sofa
 
 ## Optional hanging-lamp model. Drop models/chandelier.glb in and it replaces the
 ## procedural chandelier (auto-scaled, hung from the ceiling, centred in the room).
