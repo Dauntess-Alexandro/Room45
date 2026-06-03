@@ -56,6 +56,12 @@ const CURTAINS_GLB := "res://models/curtains.glb"
 const CURTAINS_TARGET_H := 2.20     # curtain height in metres
 const CURTAINS_YAW := 90.0          # rotate so the wide span runs across the window
 const CURTAINS_TOP_Y := 2.32        # where the TOP of the curtains hangs
+
+## "КОРСАР1" firecracker box — a re-textured, decimated version of the scanned GLB
+## with the КОРСАР1 dieline baked onto box-projected UVs (built by
+## tools/texture_petard.py). Auto-laid flat on the desk and shrunk to a small prop.
+const PETARD_GLB := "res://models/korobka_dlya_petard_tex.glb"
+const PETARD_TARGET_L := 0.14      # longest footprint dimension in metres (small box)
 # The glowing CRT overlay lives in main.tscn as the "ComputerScreen" node.
 #
 # Editing model: this script is @tool and runs ONCE to populate the scene with
@@ -66,6 +72,22 @@ const CURTAINS_TOP_Y := 2.32        # where the TOP of the curtains hangs
 
 var _mats := {}
 
+## Editor button: tick this in the Inspector to (re)build just the КОРСАР1 box on
+## the desk without reloading the scene or touching the rest of the furniture.
+@export var rebuild_petard_box := false:
+	set(value):
+		rebuild_petard_box = false          # one-shot: never actually stays on
+		if not value:
+			return                           # ignore the false written on scene load
+		if not Engine.is_editor_hint():
+			return
+		for nm in ["PetardBox", "PetardLabel"]:
+			var old := get_node_or_null(nm)
+			if old:
+				old.free()
+		_build_petard_box()
+		call_deferred("_finish_editor_populate")
+
 
 func _ready() -> void:
 	# The furniture is generated ONCE as real, editable scene nodes. Once it has
@@ -74,6 +96,13 @@ func _ready() -> void:
 	# (At runtime, if the scene was never populated, it falls back to an ephemeral
 	# build so the game still looks right.)
 	if get_child_count() > 0:
+		# Already baked into the scene. Don't rebuild — but DO add any newly
+		# introduced prop that isn't present yet, so it appears without nuking the
+		# hand-tweaked nodes already saved in main.tscn.
+		if not has_node("PetardBox"):
+			_build_petard_box()
+			if Engine.is_editor_hint():
+				call_deferred("_finish_editor_populate")
 		return
 	_build_materials()
 	_build_rug()
@@ -86,6 +115,7 @@ func _ready() -> void:
 	_build_radiator()
 	_build_curtains()
 	_build_chandelier()
+	_build_petard_box()
 	_build_decals()
 	if Engine.is_editor_hint():
 		# Runs after the deferred GLB finalizers (FIFO): turns every generated node
@@ -809,6 +839,48 @@ func _build_chandelier_procedural() -> void:
 		var shade := Vector3(cos(ang) * 0.28, 2.33, sin(ang) * 0.28)
 		_rod(ch, hub, shade, 0.012, _mats["chrome"], "Arm")
 		_sphere(ch, 0.09, shade, _mats["glass"], "Shade")
+
+
+func _build_petard_box() -> void:
+	# "КОРСАР1" firecracker box (imported GLB). Falls back to nothing if missing.
+	if not ResourceLoader.exists(PETARD_GLB):
+		return
+	var b: Node3D = (load(PETARD_GLB) as PackedScene).instantiate()
+	b.name = "PetardBox"
+	add_child(b)
+	# Defer sizing/placement so the instanced GLB's transforms are settled.
+	call_deferred("_finalize_petard_box")
+
+
+func _finalize_petard_box() -> void:
+	var b: Node3D = get_node_or_null("PetardBox") as Node3D
+	if b == null:
+		return
+	# Lay the flattest side down (smallest Y bound), then shrink to a small box.
+	# (b is already in the tree, so we can't reuse _pick_flat_rotation_deg, which
+	# re-parents — pick the rotation inline from the local bounds instead.)
+	var lbox := _local_aabb(b)
+	var rot := Vector3.ZERO
+	var best_h := INF
+	for cand: Vector3 in [Vector3.ZERO, Vector3(90, 0, 0), Vector3(0, 0, 90)]:
+		var h: float = _aabb_transformed(lbox, Transform3D(_euler_basis(cand), Vector3.ZERO)).size.y
+		if h < best_h:
+			best_h = h
+			rot = cand
+	b.rotation_degrees = rot
+	var rbox := _aabb_transformed(lbox, Transform3D(_euler_basis(rot), Vector3.ZERO))
+	var k := PETARD_TARGET_L / maxf(maxf(rbox.size.x, rbox.size.z), 0.001)
+	b.scale = Vector3.ONE * k
+	var sbox := AABB(rbox.position * k, rbox.size * k)   # final bounds at position 0
+	var desk_cx := HALF_W - 0.35      # desk top centre X (see _build_desk)
+	var desk_top_y := 0.76            # desk surface (top centre 0.74 + half 0.04)
+	var cx := desk_cx - 0.18
+	var cz := -0.70                              # near the door end, clear of the PC
+	b.position = Vector3(
+		cx - sbox.get_center().x,
+		desk_top_y - sbox.position.y,            # sit flat on the desk
+		cz - sbox.get_center().z,
+	)
 
 
 func _build_decals() -> void:

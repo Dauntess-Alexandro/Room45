@@ -25,6 +25,7 @@
 [ext_resource type="Texture2D" uid="uid://cyehgudfderom" path="res://decal_clock.png" id="16_jq2sk"]
 [ext_resource type="Texture2D" uid="uid://diuvqq3w7gqja" path="res://decal_frames.png" id="17_4k2k6"]
 [ext_resource type="PackedScene" uid="uid://dyqs67l4rms57" path="res://models/pillow.glb" id="18_0rl1p"]
+[ext_resource type="PackedScene" uid="uid://cbwym752r8bt5" path="res://models/korobka_dlya_petard_tex.glb" id="21_lswn8"]
 
 [sub_resource type="Environment" id="Env"]
 background_mode = 1
@@ -288,19 +289,6 @@ size = Vector3(0.12, 0.18, 0.04)
 [sub_resource type="BoxShape3D" id="SwitchShape"]
 size = Vector3(0.12, 0.18, 0.04)
 
-[sub_resource type="StandardMaterial3D" id="PickupMat"]
-albedo_color = Color(0.04, 0.06, 0.07, 1)
-emission_enabled = true
-emission = Color(0, 0.9, 1, 1)
-emission_energy_multiplier = 2.5
-texture_filter = 1
-
-[sub_resource type="BoxMesh" id="PickupMesh"]
-size = Vector3(0.2, 0.2, 0.2)
-
-[sub_resource type="BoxShape3D" id="PickupShape"]
-size = Vector3(0.2, 0.2, 0.2)
-
 [sub_resource type="ShaderMaterial" id="VHSMat"]
 shader = ExtResource("8_shader")
 shader_parameter/pixel_resolution = Vector2(960, 540)
@@ -447,7 +435,7 @@ mesh = SubResource("BoxMesh_4k2k6")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.96, 0.37, -1.2)
 shape = SubResource("BoxShape3D_0rl1p")
 
-[node name="Computer" type="Node3D" parent="Furniture/Desk" unique_id=168192273 instance=ExtResource("8_0odxb")]
+[node name="Computer" parent="Furniture/Desk" unique_id=168192273 instance=ExtResource("8_0odxb")]
 transform = Transform3D(-1.084255, 0, -9.478858e-08, 0, 1.084255, 0, 9.478858e-08, 0, -1.084255, 0.9557606, 0.76000005, -1.318258)
 
 [node name="Shelf" type="Node3D" parent="Furniture" unique_id=1206649101]
@@ -532,7 +520,7 @@ mesh = SubResource("BoxMesh_uypp3")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.035, 1.15, 1.5)
 shape = SubResource("BoxShape3D_blkrb")
 
-[node name="Sofa" type="Node3D" parent="Furniture" unique_id=1697505859 instance=ExtResource("11_xuqvo")]
+[node name="Sofa" parent="Furniture" unique_id=1697505859 instance=ExtResource("11_xuqvo")]
 transform = Transform3D(-2.3593596e-08, 0, 0.5246283, 0, 0.54870665, 0, -0.53975856, 0, -2.293223e-08, -0.72610986, 0.069451995, -0.54957205)
 
 [node name="PullUpBar" type="Node3D" parent="Furniture" unique_id=1896178670]
@@ -569,7 +557,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 0.85, -2.16)
 material_override = SubResource("StandardMaterial3D_ruth0")
 mesh = SubResource("BoxMesh_rm4vd")
 
-[node name="BalconyDoor" type="Node3D" parent="Furniture/Balcony" unique_id=149908706 instance=ExtResource("12_0odxb")]
+[node name="BalconyDoor" parent="Furniture/Balcony" unique_id=149908706 instance=ExtResource("12_0odxb")]
 transform = Transform3D(2.04228, 0, 0, 0, 2.04228, 0, 0, 0, 2.04228, 0.39998296, 1.0251449, -2.2202477)
 
 [node name="JambL" type="MeshInstance3D" parent="Furniture/Balcony" unique_id=1174537325]
@@ -607,13 +595,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -2.18)
 material_override = SubResource("StandardMaterial3D_1vm84")
 mesh = SubResource("QuadMesh_wu3dr")
 
-[node name="Radiator" type="Node3D" parent="Furniture" unique_id=1446257735 instance=ExtResource("14_1u8w0")]
+[node name="Radiator" parent="Furniture" unique_id=1446257735 instance=ExtResource("14_1u8w0")]
 transform = Transform3D(-4.3711387e-10, 0, -0.01, 0, 0.01, 0, 0.01, 0, -4.3711387e-10, -0.14255017, 0.04072906, -2.198906)
 
-[node name="Curtains" type="Node3D" parent="Furniture" unique_id=2019320771 instance=ExtResource("15_0odxb")]
+[node name="Curtains" parent="Furniture" unique_id=2019320771 instance=ExtResource("15_0odxb")]
 transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0.07683116, 0.016427577, -1.3264254)
 
-[node name="Chandelier" type="Node3D" parent="Furniture" unique_id=885804165 instance=ExtResource("14_seu75")]
+[node name="Chandelier" parent="Furniture" unique_id=885804165 instance=ExtResource("14_seu75")]
 transform = Transform3D(0.27195227, 0, 0, 0, 0.27195227, 0, 0, 0, 0.27195227, 0.1702919, 0.03604878, 0.27161285)
 
 [node name="WorldMap" type="MeshInstance3D" parent="Furniture" unique_id=1874604425]
@@ -631,8 +619,11 @@ transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 1.29
 material_override = SubResource("StandardMaterial3D_34ol3")
 mesh = SubResource("QuadMesh_c2n8d")
 
-[node name="Pillow" type="Node3D" parent="Furniture" unique_id=1944644636 instance=ExtResource("18_0rl1p")]
+[node name="Pillow" parent="Furniture" unique_id=1944644636 instance=ExtResource("18_0rl1p")]
 transform = Transform3D(0.002331109, 0, 0, 0, 0.002331109, 0, 0, 0, 0.002331109, -0.66886914, 0.54023117, -1.178592)
+
+[node name="PetardBox" type="Node3D" parent="Furniture" unique_id=237179058 instance=ExtResource("21_lswn8")]
+transform = Transform3D(0.1, 0, 0, 0, -4.371139e-09, -0.1, 0, 0.1, -4.371139e-09, 1.0364166, 0.79443, 0.3929013)
 
 [node name="ComputerScreen" type="MeshInstance3D" parent="." unique_id=1988444363]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.99369323, 0.97913116, -1.0146875)
@@ -675,20 +666,6 @@ mesh = SubResource("SwitchMesh")
 
 [node name="Collision" type="CollisionShape3D" parent="Interactables/LightSwitch" unique_id=1942662771]
 shape = SubResource("SwitchShape")
-
-[node name="Pickup" type="StaticBody3D" parent="Interactables" unique_id=1927422032]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.02, 0.95, 0.35)
-script = ExtResource("2_inter")
-kind = 2
-prompt_text = "PICK UP"
-
-[node name="Mesh" type="MeshInstance3D" parent="Interactables/Pickup" unique_id=1464305332]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.19435704, -0.075668275, -0.51205266)
-material_override = SubResource("PickupMat")
-mesh = SubResource("PickupMesh")
-
-[node name="Collision" type="CollisionShape3D" parent="Interactables/Pickup" unique_id=211219495]
-shape = SubResource("PickupShape")
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=2027038555]
 
