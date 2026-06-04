@@ -15,7 +15,6 @@
 [ext_resource type="Shader" uid="uid://voa8q1tw2vsm" path="res://retro_vhs.gdshader" id="8_shader"]
 [ext_resource type="Texture2D" uid="uid://depk5nlaqqx1h" path="res://tex_shelf_white.jpg" id="9_lswn8"]
 [ext_resource type="PackedScene" path="res://pause_menu.tscn" id="9_pause"]
-[ext_resource type="Texture2D" uid="uid://mkd6spneopyj" path="res://tex_wardrobe.jpg" id="10_a6jrf"]
 [ext_resource type="PackedScene" uid="uid://dke22eci2mny1" path="res://models/sofa.glb" id="11_xuqvo"]
 [ext_resource type="PackedScene" uid="uid://hjbf06i2oekg" path="res://models/balcony_door.glb" id="12_0odxb"]
 [ext_resource type="Texture2D" uid="uid://b6cfm12utqsay" path="res://tex_tulle.jpg" id="12_qsp4k"]
@@ -28,6 +27,7 @@
 [ext_resource type="AudioStream" uid="uid://8vyqn67xrp1h" path="res://sound/clock.mp3" id="17_clock"]
 [ext_resource type="PackedScene" uid="uid://dyqs67l4rms57" path="res://models/pillow.glb" id="18_0rl1p"]
 [ext_resource type="PackedScene" uid="uid://cbwym752r8bt5" path="res://models/korobka_dlya_petard_tex.glb" id="21_lswn8"]
+[ext_resource type="PackedScene" uid="uid://eckiqlw27blm" path="res://models/wardrobe.glb" id="24_xuqvo"]
 
 [sub_resource type="Environment" id="Env"]
 background_mode = 1
@@ -146,26 +146,6 @@ size = Vector3(0.33, 0.03, 0.75)
 [sub_resource type="BoxShape3D" id="BoxShape3D_qnost"]
 size = Vector3(0.35, 1.5, 0.75)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wnkbs"]
-albedo_texture = ExtResource("10_a6jrf")
-uv1_scale = Vector3(1, 2, 1)
-texture_filter = 1
-
-[sub_resource type="BoxMesh" id="BoxMesh_f6a44"]
-size = Vector3(0.55, 2.3, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_0cbny"]
-size = Vector3(0.56, 2.3, 0.02)
-
-[sub_resource type="BoxMesh" id="BoxMesh_hrvbo"]
-size = Vector3(0.04, 0.18, 0.03)
-
-[sub_resource type="BoxMesh" id="BoxMesh_uypp3"]
-size = Vector3(0.04, 0.18, 0.03)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_blkrb"]
-size = Vector3(0.55, 2.3, 1)
-
 [sub_resource type="BoxMesh" id="BoxMesh_abqjc"]
 size = Vector3(0.28, 0.04, 0.04)
 
@@ -264,6 +244,9 @@ texture_filter = 1
 
 [sub_resource type="QuadMesh" id="QuadMesh_c2n8d"]
 size = Vector2(0.35, 0.42)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_qsp4k"]
+size = Vector3(0.632502, 1.570843, 1.072863)
 
 [sub_resource type="BoxShape3D" id="SofaShape"]
 size = Vector3(1.07, 0.30947265, 2.42)
@@ -539,34 +522,6 @@ mesh = SubResource("BoxMesh_0n3wm")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.135, 0.75, 0.25)
 shape = SubResource("BoxShape3D_qnost")
 
-[node name="Wardrobe" type="Node3D" parent="Furniture" unique_id=1933510345]
-
-[node name="Body" type="MeshInstance3D" parent="Furniture/Wardrobe" unique_id=910008955]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.035, 1.15, 1.5)
-material_override = SubResource("StandardMaterial3D_wnkbs")
-mesh = SubResource("BoxMesh_f6a44")
-
-[node name="Seam" type="MeshInstance3D" parent="Furniture/Wardrobe" unique_id=101754694]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.035, 1.15, 1.5)
-material_override = SubResource("StandardMaterial3D_kq58d")
-mesh = SubResource("BoxMesh_0cbny")
-
-[node name="HandleA" type="MeshInstance3D" parent="Furniture/Wardrobe" unique_id=1693506752]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.755, 1.2, 1.44)
-material_override = SubResource("StandardMaterial3D_kq58d")
-mesh = SubResource("BoxMesh_hrvbo")
-
-[node name="HandleB" type="MeshInstance3D" parent="Furniture/Wardrobe" unique_id=1259127759]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.755, 1.2, 1.56)
-material_override = SubResource("StandardMaterial3D_kq58d")
-mesh = SubResource("BoxMesh_uypp3")
-
-[node name="WardrobeBody" type="StaticBody3D" parent="Furniture/Wardrobe" unique_id=911035093]
-
-[node name="@CollisionShape3D@18535" type="CollisionShape3D" parent="Furniture/Wardrobe/WardrobeBody" unique_id=28618214]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.035, 1.15, 1.5)
-shape = SubResource("BoxShape3D_blkrb")
-
 [node name="Sofa" parent="Furniture" unique_id=1697505859 instance=ExtResource("11_xuqvo")]
 transform = Transform3D(-2.3593596e-08, 0, 0.5246283, 0, 0.54870665, 0, -0.53975856, 0, -2.293223e-08, -0.72610986, 0.069451995, -0.54957205)
 
@@ -679,6 +634,15 @@ transform = Transform3D(0.002331109, 0, 0, 0, 0.002331109, 0, 0, 0, 0.002331109,
 [node name="PetardBox" parent="Furniture" unique_id=237179058 instance=ExtResource("21_lswn8")]
 transform = Transform3D(0.1, 0, 0, 0, -4.371139e-09, -0.1, 0, 0.1, -4.371139e-09, 1.0364166, 0.79443, 0.3929013)
 
+[node name="Wardrobe" parent="Furniture" unique_id=1691252455 instance=ExtResource("24_xuqvo")]
+transform = Transform3D(-4.8082527e-10, 0, 0.011, 0, 0.011, 0, -0.011, 0, -4.8082527e-10, -1.0077533, 0.025841951, 1.4198842)
+
+[node name="WardrobeBody" type="StaticBody3D" parent="Furniture" unique_id=1025551915]
+
+[node name="@CollisionShape3D@18528" type="CollisionShape3D" parent="Furniture/WardrobeBody" unique_id=1770556684]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.996752, 0.793047, 1.314976)
+shape = SubResource("BoxShape3D_qsp4k")
+
 [node name="ComputerTerminal" type="Node" parent="." unique_id=634651961]
 script = ExtResource("4_terminal")
 screen_path = NodePath("../Furniture/Desk/Computer/ComputerScreen")
@@ -688,6 +652,7 @@ drive_audio_origin_path = NodePath("../Furniture/Desk/Computer/ComputerDriveAudi
 player_path = NodePath("../Player")
 crosshair_path = NodePath("../UI/Crosshair")
 prompt_path = NodePath("../UI/InteractionPrompt")
+font_path = "res://fonts/Perfect DOS VGA 437.ttf"
 
 [node name="SofaBody" type="StaticBody3D" parent="." unique_id=757015445]
 

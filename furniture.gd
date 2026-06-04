@@ -57,6 +57,13 @@ const CURTAINS_TARGET_H := 2.20     # curtain height in metres
 const CURTAINS_YAW := 90.0          # rotate so the wide span runs across the window
 const CURTAINS_TOP_Y := 2.32        # where the TOP of the curtains hangs
 
+## Wardrobe model (replaces the procedural cream box on the west wall).
+const WARDROBE_GLB := "res://models/wardrobe.glb"
+const WARDROBE_TARGET_H := 2.30     # height in metres
+const WARDROBE_YAW := 0.0           # spin (90/180) if the front faces the wrong way
+const WARDROBE_CENTER_Z := 1.50     # position along the west wall
+const WARDROBE_WALL_GAP := 0.02     # gap from the west wall
+
 ## "КОРСАР1" firecracker box — a re-textured, decimated version of the scanned GLB
 ## with the КОРСАР1 dieline baked onto box-projected UVs (built by
 ## tools/texture_petard.py). Auto-laid flat on the desk and shrunk to a small prop.
@@ -97,12 +104,14 @@ func _ready() -> void:
 	# build so the game still looks right.)
 	if get_child_count() > 0:
 		# Already baked into the scene. Don't rebuild — but DO add any newly
-		# introduced prop that isn't present yet, so it appears without nuking the
-		# hand-tweaked nodes already saved in main.tscn.
+		# introduced prop that isn't present yet, and swap out superseded ones, so
+		# changes appear without nuking the hand-tweaked nodes saved in main.tscn.
+		var changed := _migrate_wardrobe_if_needed()
 		if not has_node("PetardBox"):
 			_build_petard_box()
-			if Engine.is_editor_hint():
-				call_deferred("_finish_editor_populate")
+			changed = true
+		if changed and Engine.is_editor_hint():
+			call_deferred("_finish_editor_populate")
 		return
 	_build_materials()
 	_build_rug()
@@ -404,6 +413,14 @@ func _build_shelf() -> void:
 
 
 func _build_wardrobe() -> void:
+	# Prefer a real GLB wardrobe if present; otherwise the procedural cream box.
+	if ResourceLoader.exists(WARDROBE_GLB):
+		_build_wardrobe_from_glb()
+		return
+	_build_wardrobe_procedural()
+
+
+func _build_wardrobe_procedural() -> void:
 	# Tall cream wardrobe, west wall near the door corner.
 	var w := Node3D.new()
 	w.name = "Wardrobe"
@@ -416,6 +433,56 @@ func _build_wardrobe() -> void:
 	_box(w, Vector3(0.04, 0.18, 0.03), Vector3(cx + 0.28, 1.2, cz - 0.06), _mats["metal"], "HandleA")
 	_box(w, Vector3(0.04, 0.18, 0.03), Vector3(cx + 0.28, 1.2, cz + 0.06), _mats["metal"], "HandleB")
 	_collider(w, Vector3(0.55, 2.3, 1.0), Vector3(cx, 1.15, cz), "WardrobeBody")
+
+
+func _build_wardrobe_from_glb() -> void:
+	var w: Node3D = (load(WARDROBE_GLB) as PackedScene).instantiate()
+	w.name = "Wardrobe"
+	add_child(w)
+	# Defer sizing/placement so the instanced GLB's transforms are settled.
+	call_deferred("_finalize_wardrobe", w)
+
+
+func _finalize_wardrobe(w: Node3D) -> void:
+	if not is_instance_valid(w):
+		return
+	var lbox := _local_aabb(w)
+	var basis := Basis.from_euler(Vector3(0.0, deg_to_rad(WARDROBE_YAW), 0.0))
+	var rbox := _aabb_transformed(lbox, Transform3D(basis, Vector3.ZERO))
+	var k := WARDROBE_TARGET_H / maxf(rbox.size.y, 0.001)
+	var sbox := AABB(rbox.position * k, rbox.size * k)   # final bounds at position 0
+	w.rotation_degrees = Vector3(0.0, WARDROBE_YAW, 0.0)
+	w.scale = Vector3.ONE * k
+	var wall_x := -HALF_W + WARDROBE_WALL_GAP
+	w.position = Vector3(
+		wall_x - sbox.position.x,                  # back flush against the west wall
+		0.0 - sbox.position.y,                     # bottom on the floor
+		WARDROBE_CENTER_Z - sbox.get_center().z,   # centred along the wall
+	)
+	# Room-space collider as a sibling so the GLB's scale doesn't shear it.
+	var room_box := AABB(sbox.position + w.position, sbox.size)
+	_collider(self, room_box.size, room_box.get_center(), "WardrobeBody")
+
+
+## Replace the old procedural box wardrobe (baked in main.tscn) with the GLB once
+## the model exists. Returns true if it swapped anything. Self-healing: after the
+## scene is re-saved with the GLB instance, this becomes a no-op.
+func _migrate_wardrobe_if_needed() -> bool:
+	if not ResourceLoader.exists(WARDROBE_GLB):
+		return false
+	var old := get_node_or_null("Wardrobe")
+	# The procedural version is a plain Node3D with a "Body" box child; the GLB
+	# version is an instanced scene (scene_file_path set). Only replace the box.
+	var is_procedural := old != null and old.scene_file_path == "" and old.has_node("Body")
+	if old != null and not is_procedural:
+		return false
+	if old != null:
+		old.free()
+	var old_body := get_node_or_null("WardrobeBody")
+	if old_body != null:
+		old_body.free()
+	_build_wardrobe_from_glb()
+	return true
 
 
 func _build_sofa() -> void:
