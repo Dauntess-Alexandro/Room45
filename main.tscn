@@ -9,9 +9,9 @@
 [ext_resource type="Texture2D" uid="uid://qyq67o3xtig2" path="res://tex_floor.jpg" id="5_floor"]
 [ext_resource type="Texture2D" uid="uid://b1kby3daobgjg" path="res://tex_ceiling.jpg" id="6_ceil"]
 [ext_resource type="Texture2D" uid="uid://1vl85axgj05h" path="res://tex_rug.jpg" id="6_d13ii"]
-[ext_resource type="Texture2D" uid="uid://ou2ifn6btnov" path="res://tex_countertop.jpg" id="7_1u8w0"]
 [ext_resource type="Texture2D" uid="uid://dkq4qxftsfmvo" path="res://decal_door.png" id="7_door"]
 [ext_resource type="PackedScene" uid="uid://bqatecgnftwxh" path="res://models/retro_computer.glb" id="8_0odxb"]
+[ext_resource type="PackedScene" uid="uid://b8inbulljamjy" path="res://models/computer_old_desk.glb" id="8_olddesk"]
 [ext_resource type="Shader" uid="uid://voa8q1tw2vsm" path="res://retro_vhs.gdshader" id="8_shader"]
 [ext_resource type="Texture2D" uid="uid://depk5nlaqqx1h" path="res://tex_shelf_white.jpg" id="9_lswn8"]
 [ext_resource type="PackedScene" path="res://pause_menu.tscn" id="9_pause"]
@@ -66,34 +66,8 @@ texture_filter = 1
 [sub_resource type="BoxMesh" id="BoxMesh_a6jrf"]
 size = Vector3(0.85, 0.012, 2.6)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xuqvo"]
-albedo_texture = ExtResource("7_1u8w0")
-uv1_scale = Vector3(1, 1, 2)
-texture_filter = 1
-
-[sub_resource type="BoxMesh" id="BoxMesh_qsp4k"]
-size = Vector3(0.7, 0.04, 1.8)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kq58d"]
-albedo_color = Color(0.08, 0.08, 0.09, 1)
-metallic = 0.6
-roughness = 0.4
-texture_filter = 1
-
-[sub_resource type="BoxMesh" id="BoxMesh_seu75"]
-size = Vector3(0.05, 0.72, 0.05)
-
-[sub_resource type="BoxMesh" id="BoxMesh_htxhm"]
-size = Vector3(0.05, 0.72, 0.05)
-
-[sub_resource type="BoxMesh" id="BoxMesh_jq2sk"]
-size = Vector3(0.05, 0.72, 0.05)
-
-[sub_resource type="BoxMesh" id="BoxMesh_4k2k6"]
-size = Vector3(0.05, 0.72, 0.05)
-
 [sub_resource type="BoxShape3D" id="BoxShape3D_0rl1p"]
-size = Vector3(0.7, 0.74, 1.8)
+size = Vector3(0.84, 0.74, 1.34)
 
 [sub_resource type="StandardMaterial3D" id="ScreenMat"]
 render_priority = 10
@@ -145,6 +119,12 @@ size = Vector3(0.33, 0.03, 0.75)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_qnost"]
 size = Vector3(0.35, 1.5, 0.75)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kq58d"]
+albedo_color = Color(0.08, 0.08, 0.09, 1)
+metallic = 0.6
+roughness = 0.4
+texture_filter = 1
 
 [sub_resource type="BoxMesh" id="BoxMesh_abqjc"]
 size = Vector3(0.28, 0.04, 0.04)
@@ -394,39 +374,17 @@ mesh = SubResource("BoxMesh_a6jrf")
 [node name="Desk" type="Node3D" parent="Furniture" unique_id=1308499158]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.30953455)
 
-[node name="Top" type="MeshInstance3D" parent="Furniture/Desk" unique_id=1339090556]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.96, 0.74, -1.2)
-material_override = SubResource("StandardMaterial3D_xuqvo")
-mesh = SubResource("BoxMesh_qsp4k")
-
-[node name="Leg" type="MeshInstance3D" parent="Furniture/Desk" unique_id=1852381793]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 0.36, -2.05)
-material_override = SubResource("StandardMaterial3D_kq58d")
-mesh = SubResource("BoxMesh_seu75")
-
-[node name="@MeshInstance3D@18528" type="MeshInstance3D" parent="Furniture/Desk" unique_id=443011586]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 0.36, -0.35)
-material_override = SubResource("StandardMaterial3D_kq58d")
-mesh = SubResource("BoxMesh_htxhm")
-
-[node name="@MeshInstance3D@18529" type="MeshInstance3D" parent="Furniture/Desk" unique_id=792566833]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.27, 0.36, -2.05)
-material_override = SubResource("StandardMaterial3D_kq58d")
-mesh = SubResource("BoxMesh_jq2sk")
-
-[node name="@MeshInstance3D@18530" type="MeshInstance3D" parent="Furniture/Desk" unique_id=1833394855]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.27, 0.36, -0.35)
-material_override = SubResource("StandardMaterial3D_kq58d")
-mesh = SubResource("BoxMesh_4k2k6")
+[node name="ComputerOldDesk" parent="Furniture/Desk" unique_id=285943005 instance=ExtResource("8_olddesk")]
+transform = Transform3D(0.48, 0, 0, 0, 0.48, 8.392586e-08, 0, -8.392586e-08, 0.48, 0.7706457, 1.8e-07, -1.2245158)
 
 [node name="DeskBody" type="StaticBody3D" parent="Furniture/Desk" unique_id=2027871166]
 
 [node name="@CollisionShape3D@18531" type="CollisionShape3D" parent="Furniture/Desk/DeskBody" unique_id=2023038503]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.96, 0.37, -1.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.895, 0.37, -1.2)
 shape = SubResource("BoxShape3D_0rl1p")
 
 [node name="Computer" parent="Furniture/Desk" unique_id=168192273 instance=ExtResource("8_0odxb")]
-transform = Transform3D(0, 0, -0.008522919, 0, 0.008522919, 0, 0.008522919, 0, 0, 0.9081304, 0.76198864, -1.194975)
+transform = Transform3D(0, 0, -0.008522919, 0, 0.008522919, 0, 0.008522919, 0, 0, 0.7736869, 0.74529934, -1.194975)
 
 [node name="ComputerScreen" type="MeshInstance3D" parent="Furniture/Desk/Computer" unique_id=1988444363]
 transform = Transform3D(1.4254757, -0.030206045, 0.25516057, 0.005263181, 1.6747696, 0.110270336, -0.26550418, -0.12897487, 1.3721278, -23.013, 29.048851, -9.787979)

@@ -29,6 +29,14 @@ const GLB_UNIT_SCALE := 0.001
 
 const SCREEN_SIZE := Vector2(0.46, 0.30)
 
+## Real old computer desk model. It is scaled as a child of Desk so the Computer rig
+## keeps its own scale/children and can be dragged together with the terminal
+## hitboxes.
+const COMPUTER_OLD_DESK_GLB := "res://models/computer_old_desk.glb"
+const COMPUTER_OLD_DESK_TARGET_H := 0.76
+const COMPUTER_OLD_DESK_TARGET_DEPTH := 0.84
+const COMPUTER_OLD_DESK_TARGET_L := 1.34
+
 ## Single retro PC model on the desk (replaces the two procedural CRT boxes).
 const COMPUTER_GLB := "res://models/retro_computer.glb"
 const COMPUTER_TARGET_H := 0.42   # overall height in metres (tweak to taste)
@@ -347,6 +355,18 @@ func _build_desk() -> void:
 	var desk := Node3D.new()
 	desk.name = "Desk"
 	add_child(desk)
+	if ResourceLoader.exists(COMPUTER_OLD_DESK_GLB):
+		var desk_length := COMPUTER_OLD_DESK_TARGET_L
+		var desk_cz := -1.20
+		var table: Node3D = (load(COMPUTER_OLD_DESK_GLB) as PackedScene).instantiate()
+		table.name = "ComputerOldDesk"
+		desk.add_child(table)
+		call_deferred("_finalize_computer_old_desk", table, desk_cz)
+		var collider_cx := HALF_W - COMPUTER_OLD_DESK_TARGET_DEPTH * 0.5
+		_collider(desk, Vector3(COMPUTER_OLD_DESK_TARGET_DEPTH, 0.74, desk_length), Vector3(collider_cx, 0.37, desk_cz), "DeskBody")
+		var computer_cx := HALF_W - 0.70 * 0.5
+		_build_monitors(desk, computer_cx, desk_cz)
+		return
 	var depth := 0.70          # X (into the room) — wider so the PC + keyboard fit
 	var length := 1.80         # Z (along the wall)
 	var cx := HALF_W - depth * 0.5   # back edge flush with the east wall
@@ -386,6 +406,20 @@ func _finalize_computer(pc: Node3D, cx: float, cz: float) -> void:
 	pc.position = Vector3(
 		cx - sbox.get_center().x,
 		desk_top_y - sbox.position.y,
+		cz - sbox.get_center().z,
+	)
+
+
+func _finalize_computer_old_desk(table: Node3D, cz: float) -> void:
+	if not is_instance_valid(table):
+		return
+	var lbox := _local_aabb(table)
+	var k := COMPUTER_OLD_DESK_TARGET_H / maxf(lbox.size.y, 0.001)
+	table.scale = Vector3.ONE * k
+	var sbox := AABB(lbox.position * k, lbox.size * k)
+	table.position = Vector3(
+		HALF_W - sbox.end.x,
+		-sbox.position.y,
 		cz - sbox.get_center().z,
 	)
 
