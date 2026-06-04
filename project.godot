@@ -21,6 +21,7 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 [autoload]
 
 DisplaySettings="*res://display_settings.gd"
+GameClock="*res://game_clock.gd"
 
 [display]
 

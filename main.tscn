@@ -13,7 +13,6 @@
 [ext_resource type="PackedScene" uid="uid://bqatecgnftwxh" path="res://models/retro_computer.glb" id="8_0odxb"]
 [ext_resource type="PackedScene" uid="uid://b8inbulljamjy" path="res://models/computer_old_desk.glb" id="8_olddesk"]
 [ext_resource type="Shader" uid="uid://voa8q1tw2vsm" path="res://retro_vhs.gdshader" id="8_shader"]
-[ext_resource type="Texture2D" uid="uid://depk5nlaqqx1h" path="res://tex_shelf_white.jpg" id="9_lswn8"]
 [ext_resource type="PackedScene" path="res://pause_menu.tscn" id="9_pause"]
 [ext_resource type="PackedScene" uid="uid://dke22eci2mny1" path="res://models/sofa.glb" id="11_xuqvo"]
 [ext_resource type="PackedScene" uid="uid://hjbf06i2oekg" path="res://models/balcony_door.glb" id="12_0odxb"]
@@ -22,12 +21,16 @@
 [ext_resource type="PackedScene" uid="uid://de2mexy6ey4j" path="res://models/chandelier.glb" id="14_seu75"]
 [ext_resource type="PackedScene" uid="uid://cgu2bhwo0pcdn" path="res://models/curtains.glb" id="15_0odxb"]
 [ext_resource type="Texture2D" uid="uid://6g1awfatymcc" path="res://decal_worldmap.png" id="15_htxhm"]
-[ext_resource type="Texture2D" uid="uid://cyehgudfderom" path="res://decal_clock.png" id="16_jq2sk"]
-[ext_resource type="Texture2D" uid="uid://diuvqq3w7gqja" path="res://decal_frames.png" id="17_4k2k6"]
 [ext_resource type="AudioStream" uid="uid://8vyqn67xrp1h" path="res://sound/clock.mp3" id="17_clock"]
 [ext_resource type="PackedScene" uid="uid://dyqs67l4rms57" path="res://models/pillow.glb" id="18_0rl1p"]
 [ext_resource type="PackedScene" uid="uid://cbwym752r8bt5" path="res://models/korobka_dlya_petard_tex.glb" id="21_lswn8"]
 [ext_resource type="PackedScene" uid="uid://eckiqlw27blm" path="res://models/wardrobe.glb" id="24_xuqvo"]
+[ext_resource type="Texture2D" uid="uid://8dbm1cjrjfml" path="res://_raw/calendar.png" id="25_calendar"]
+[ext_resource type="PackedScene" uid="uid://c4r45hv6xrgwa" path="res://models/portrait.glb" id="26_portrait"]
+[ext_resource type="PackedScene" uid="uid://dioxtesxha0aw" path="res://models/wooden_shelf.glb" id="27_shelf"]
+[ext_resource type="PackedScene" uid="uid://dsq13mmg2fn13" path="res://models/clock.glb" id="28_clock"]
+[ext_resource type="Script" uid="uid://bac255qhcv5c2" path="res://clock_hands.gd" id="29_clock_hands"]
+[ext_resource type="Script" uid="uid://y0an2o2bglv2" path="res://sun_controller.gd" id="30_sun"]
 
 [sub_resource type="Environment" id="Env"]
 background_mode = 1
@@ -86,39 +89,8 @@ size = Vector3(27.5, 20.5, 2)
 [sub_resource type="BoxShape3D" id="ComputerPowerButtonShape"]
 size = Vector3(5, 5, 2)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ok6jj"]
-albedo_texture = ExtResource("9_lswn8")
-texture_filter = 1
-
-[sub_resource type="BoxMesh" id="BoxMesh_facbu"]
-size = Vector3(0.35, 0.03, 0.75)
-
-[sub_resource type="BoxMesh" id="BoxMesh_b1qrp"]
-size = Vector3(0.35, 0.03, 0.75)
-
-[sub_resource type="BoxMesh" id="BoxMesh_come4"]
-size = Vector3(0.35, 1.5, 0.03)
-
-[sub_resource type="BoxMesh" id="BoxMesh_h8e4i"]
-size = Vector3(0.35, 1.5, 0.03)
-
-[sub_resource type="BoxMesh" id="BoxMesh_4lmeg"]
-size = Vector3(0.04, 1.5, 0.75)
-
-[sub_resource type="BoxMesh" id="BoxMesh_0cp0l"]
-size = Vector3(0.33, 1.5, 0.03)
-
-[sub_resource type="BoxMesh" id="BoxMesh_d2t1y"]
-size = Vector3(0.33, 0.03, 0.75)
-
-[sub_resource type="BoxMesh" id="BoxMesh_gngh3"]
-size = Vector3(0.33, 0.03, 0.75)
-
-[sub_resource type="BoxMesh" id="BoxMesh_0n3wm"]
-size = Vector3(0.33, 0.03, 0.75)
-
 [sub_resource type="BoxShape3D" id="BoxShape3D_qnost"]
-size = Vector3(0.35, 1.5, 0.75)
+size = Vector3(0.62, 1.55, 0.62)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kq58d"]
 albedo_color = Color(0.08, 0.08, 0.09, 1)
@@ -203,27 +175,14 @@ texture_filter = 1
 [sub_resource type="QuadMesh" id="QuadMesh_0dhbp"]
 size = Vector2(1.6, 0.95)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jx0wj"]
-transparency = 2
-alpha_scissor_threshold = 0.5
-alpha_antialiasing_mode = 0
+[sub_resource type="StandardMaterial3D" id="CalendarFaceMat"]
 cull_mode = 2
-albedo_texture = ExtResource("16_jq2sk")
+albedo_texture = ExtResource("25_calendar")
 roughness = 0.9
 texture_filter = 1
 
-[sub_resource type="QuadMesh" id="QuadMesh_kkkcx"]
-size = Vector2(0.4, 0.4)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_34ol3"]
-transparency = 1
-cull_mode = 2
-albedo_texture = ExtResource("17_4k2k6")
-roughness = 0.9
-texture_filter = 1
-
-[sub_resource type="QuadMesh" id="QuadMesh_c2n8d"]
-size = Vector2(0.35, 0.42)
+[sub_resource type="QuadMesh" id="CalendarFaceMesh"]
+size = Vector2(0.56, 0.75)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_qsp4k"]
 size = Vector3(0.632502, 1.570843, 1.072863)
@@ -347,16 +306,48 @@ light_color = Color(1, 0.86, 0.66, 1)
 light_energy = 0.507
 omni_range = 4.0
 
-[node name="WindowLight" type="OmniLight3D" parent="." unique_id=1956907168]
+[node name="WindowLight" type="Node3D" parent="." unique_id=1956907168]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -2)
+
+[node name="FillLeft" type="OmniLight3D" parent="WindowLight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.72, 0.05, 0.0)
 light_color = Color(0.75, 0.83, 1, 1)
-light_energy = 1.3
-omni_range = 4.5
+light_energy = 0.35
+omni_range = 3.2
+omni_attenuation = 0.38
+
+[node name="FillCenter" type="OmniLight3D" parent="WindowLight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0, 0.08)
+light_color = Color(0.75, 0.83, 1, 1)
+light_energy = 0.45
+omni_range = 3.4
+omni_attenuation = 0.32
+
+[node name="FillRight" type="OmniLight3D" parent="WindowLight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.72, 0.05, 0.0)
+light_color = Color(0.75, 0.83, 1, 1)
+light_energy = 0.35
+omni_range = 3.2
+omni_attenuation = 0.38
 
 [node name="Sun" type="DirectionalLight3D" parent="." unique_id=1753937622]
 transform = Transform3D(1, 0, 0, 0, 0.6428, -0.766, 0, 0.766, 0.6428, 0, 3, 0)
 light_energy = 0.25
 shadow_enabled = true
+script = ExtResource("30_sun")
+world_environment_path = NodePath("../WorldEnvironment")
+window_light_path = NodePath("../WindowLight")
+window_beam_path = NodePath("../WindowSunBeam")
+daylight_mesh_path = NodePath("../Furniture/Balcony/Daylight")
+
+[node name="WindowSunBeam" type="SpotLight3D" parent="." unique_id=2036001154]
+transform = Transform3D(1, 0, 0, 0, 0.81915206, -0.57357645, 0, 0.57357645, 0.81915206, 0, 1.7, -1.98)
+light_color = Color(1, 0.88, 0.65, 1)
+light_energy = 0.0
+shadow_enabled = true
+spot_range = 5.2
+spot_angle = 58.0
+spot_angle_attenuation = 0.22
 
 [node name="Player" parent="." unique_id=821891331 instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 1.8)
@@ -380,7 +371,7 @@ transform = Transform3D(0.48, 0, 0, 0, 0.48, 8.392586e-08, 0, -8.392586e-08, 0.4
 [node name="DeskBody" type="StaticBody3D" parent="Furniture/Desk" unique_id=2027871166]
 
 [node name="@CollisionShape3D@18531" type="CollisionShape3D" parent="Furniture/Desk/DeskBody" unique_id=2023038503]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.895, 0.37, -1.2)
+transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.9, 0.8954215, 0.3763172, -1.1758455)
 shape = SubResource("BoxShape3D_0rl1p")
 
 [node name="Computer" parent="Furniture/Desk" unique_id=168192273 instance=ExtResource("8_0odxb")]
@@ -426,58 +417,13 @@ omni_range = 0.16
 [node name="ComputerDriveAudioOrigin" type="Node3D" parent="Furniture/Desk/Computer" unique_id=572409341]
 transform = Transform3D(0.9974, 0, 0.072, 0, 1, 0, -0.072, 0, 0.9974, 26, 23, -6)
 
-[node name="Shelf" type="Node3D" parent="Furniture" unique_id=1206649101]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.31149507)
+[node name="Shelf" parent="Furniture" unique_id=1206649101 instance=ExtResource("27_shelf")]
+transform = Transform3D(-0.0062, 0, 5.420212e-10, 0, 0.0062, 0, -5.420212e-10, 0, -0.0062, 1, 0, 0.56149507)
 
-[node name="Bottom" type="MeshInstance3D" parent="Furniture/Shelf" unique_id=768085110]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.135, 0.015, 0.25)
-material_override = SubResource("StandardMaterial3D_ok6jj")
-mesh = SubResource("BoxMesh_facbu")
+[node name="ShelfBody" type="StaticBody3D" parent="Furniture" unique_id=861770724]
 
-[node name="Top" type="MeshInstance3D" parent="Furniture/Shelf" unique_id=1336600165]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.135, 1.485, 0.25)
-material_override = SubResource("StandardMaterial3D_ok6jj")
-mesh = SubResource("BoxMesh_b1qrp")
-
-[node name="SideA" type="MeshInstance3D" parent="Furniture/Shelf" unique_id=1805591449]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.135, 0.75, -0.11)
-material_override = SubResource("StandardMaterial3D_ok6jj")
-mesh = SubResource("BoxMesh_come4")
-
-[node name="SideB" type="MeshInstance3D" parent="Furniture/Shelf" unique_id=534833247]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.135, 0.75, 0.61)
-material_override = SubResource("StandardMaterial3D_ok6jj")
-mesh = SubResource("BoxMesh_h8e4i")
-
-[node name="Back" type="MeshInstance3D" parent="Furniture/Shelf" unique_id=2073367870]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.29, 0.75, 0.25)
-material_override = SubResource("StandardMaterial3D_ok6jj")
-mesh = SubResource("BoxMesh_4lmeg")
-
-[node name="Divider" type="MeshInstance3D" parent="Furniture/Shelf" unique_id=1211126881]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.135, 0.75, 0.25)
-material_override = SubResource("StandardMaterial3D_ok6jj")
-mesh = SubResource("BoxMesh_0cp0l")
-
-[node name="Shelf" type="MeshInstance3D" parent="Furniture/Shelf" unique_id=44702306]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.135, 0.375, 0.25)
-material_override = SubResource("StandardMaterial3D_ok6jj")
-mesh = SubResource("BoxMesh_d2t1y")
-
-[node name="@MeshInstance3D@18532" type="MeshInstance3D" parent="Furniture/Shelf" unique_id=806728401]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.135, 0.75, 0.25)
-material_override = SubResource("StandardMaterial3D_ok6jj")
-mesh = SubResource("BoxMesh_gngh3")
-
-[node name="@MeshInstance3D@18533" type="MeshInstance3D" parent="Furniture/Shelf" unique_id=1229338823]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.135, 1.125, 0.25)
-material_override = SubResource("StandardMaterial3D_ok6jj")
-mesh = SubResource("BoxMesh_0n3wm")
-
-[node name="ShelfBody" type="StaticBody3D" parent="Furniture/Shelf" unique_id=861770724]
-
-[node name="@CollisionShape3D@18534" type="CollisionShape3D" parent="Furniture/Shelf/ShelfBody" unique_id=1652044168]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.135, 0.75, 0.25)
+[node name="@CollisionShape3D@18534" type="CollisionShape3D" parent="Furniture/ShelfBody" unique_id=1652044168]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0.775, 0.56149507)
 shape = SubResource("BoxShape3D_qnost")
 
 [node name="Sofa" parent="Furniture" unique_id=1697505859 instance=ExtResource("11_xuqvo")]
@@ -569,10 +515,9 @@ transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 1.29
 material_override = SubResource("StandardMaterial3D_cyx1q")
 mesh = SubResource("QuadMesh_0dhbp")
 
-[node name="Clock" type="MeshInstance3D" parent="Furniture" unique_id=1006218501]
+[node name="Clock" parent="Furniture" unique_id=1006218501 instance=ExtResource("28_clock")]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 1.295, 1.95, 0.78)
-material_override = SubResource("StandardMaterial3D_jx0wj")
-mesh = SubResource("QuadMesh_kkkcx")
+script = ExtResource("29_clock_hands")
 
 [node name="TickAudio" type="AudioStreamPlayer3D" parent="Furniture/Clock" unique_id=305686028]
 stream = ExtResource("17_clock")
@@ -581,10 +526,13 @@ unit_size = 0.55
 max_distance = 10.0
 script = ExtResource("4_clock_tick")
 
-[node name="Portrait" type="MeshInstance3D" parent="Furniture" unique_id=1500106693]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 1.295, 1.68, 1.35)
-material_override = SubResource("StandardMaterial3D_34ol3")
-mesh = SubResource("QuadMesh_c2n8d")
+[node name="WallCalendar" type="MeshInstance3D" parent="Furniture" unique_id=656078892]
+transform = Transform3D(0, 0, -0.6616886, 0, 0.98125184, 0, 0.99999994, 0, 0, 1.304219, 1.4460707, -1.6965564)
+material_override = SubResource("CalendarFaceMat")
+mesh = SubResource("CalendarFaceMesh")
+
+[node name="Portrait" parent="Furniture" unique_id=1339017554 instance=ExtResource("26_portrait")]
+transform = Transform3D(-0.26, 2.2729921e-08, 0, -2.2727878e-08, -0.25997663, 0.003942027, 3.0476857e-10, 0.0034861465, 0.29397357, 1.295, 1.6086642, 1.35)
 
 [node name="Pillow" parent="Furniture" unique_id=1944644636 instance=ExtResource("18_0rl1p")]
 transform = Transform3D(0.002331109, 0, 0, 0, 0.002331109, 0, 0, 0, 0.002331109, -0.66886914, 0.54023117, -1.178592)
@@ -610,6 +558,7 @@ drive_audio_origin_path = NodePath("../Furniture/Desk/Computer/ComputerDriveAudi
 player_path = NodePath("../Player")
 crosshair_path = NodePath("../UI/Crosshair")
 prompt_path = NodePath("../UI/InteractionPrompt")
+room_lights_path = NodePath("../ChandelierLights")
 font_path = "res://fonts/Perfect DOS VGA 437.ttf"
 
 [node name="SofaBody" type="StaticBody3D" parent="." unique_id=757015445]

@@ -66,6 +66,7 @@ var _typing_id := 0
 var _delivery_id := 0
 var _greeted_this_session := false
 var _received_files: Dictionary = {}
+var _last_idle_header := ""
 
 @export var room_lights_path: NodePath   ## node holding room Light3D(s); empty = auto-find
 ## Optional retro/pixel font for the screen. Empty = system monospace (Consolas/Courier).
@@ -107,6 +108,7 @@ func _ready() -> void:
 	_setup_power_led()
 	_setup_activity_led()
 	_setup_chat()
+	_setup_game_clock()
 	_setup_cursor_blink()
 	_set_powered(false)
 
@@ -146,6 +148,16 @@ func _process(delta: float) -> void:
 			_flicker_layer.color.a = 0.03 + 0.025 * (0.5 + 0.5 * sin(t * 7.3)) + randf() * 0.01
 		else:
 			_flicker_layer.color.a = 0.0
+
+
+func _setup_game_clock() -> void:
+	if not GameClock.minute_changed.is_connected(_on_game_clock_minute_changed):
+		GameClock.minute_changed.connect(_on_game_clock_minute_changed)
+
+
+func _on_game_clock_minute_changed() -> void:
+	if _powered_on and not _chat_mode and not _chat_waiting:
+		_set_header(_idle_header())
 
 
 func open_terminal(_by: Node = null) -> void:
@@ -223,7 +235,7 @@ func _set_powered(value: bool) -> void:
 		_chat.cancel()
 	_history.clear()
 	_current_command = ""
-	_set_header("" if not value else HEADER_IDLE)
+	_set_header("" if not value else _idle_header())
 	_refresh_log()
 	_refresh_prompt_line()
 
@@ -238,7 +250,7 @@ func close_terminal() -> void:
 	_stop_typing_indicator()
 	if _chat != null:
 		_chat.cancel()
-	_set_header(HEADER_IDLE)
+	_set_header(_idle_header())
 	_current_command = ""
 	_refresh_prompt_line()
 	if _player != null:
@@ -828,7 +840,7 @@ func _boot_sequence() -> void:
 	if not await _boot_write(boot_id, "Starting CRT terminal...", 0.48):
 		return
 	_write("CRT online")
-	_set_header(HEADER_IDLE)
+	_set_header(_idle_header())
 	if _chat != null and _chat.has_saved_conversation():
 		_write("* аська: ростик писал, пока тебя не было")
 		_write("  набери 'chat' чтобы открыть")
@@ -871,7 +883,7 @@ func _submit_command(command: String) -> void:
 func _run_command(cmd: String) -> void:
 	var lower := cmd.to_lower()
 	if lower == "help":
-		_write("commands: help, ls, whoami, status, chat, cat <file>, sudo update, clear, exit")
+		_write("commands: help, ls, whoami, status, time [HH:MM], date, chat, cat <file>, sudo update, clear, exit")
 	elif lower == "ls":
 		var listing := "desktop  room45.log  antenna.cfg  petard_box.txt  rostik.icq"
 		for f in _received_files:
@@ -885,9 +897,20 @@ func _run_command(cmd: String) -> void:
 		_enter_chat()
 	elif lower == "status":
 		_write("monitor: online")
+		_write("datetime: " + GameClock.datetime_string(true))
 		_write("lamp: unstable")
 		_write("signal: waiting")
-		_write("rostik: online (2006)")
+		_write("rostik: online (2005)")
+	elif lower.begins_with("time "):
+		var raw_time := cmd.substr(5).strip_edges()
+		if GameClock.set_time_from_string(raw_time):
+			_write("time set: " + GameClock.datetime_string(true))
+		else:
+			_write("usage: time HH:MM")
+	elif lower == "time":
+		_write(GameClock.time_string(true))
+	elif lower == "date":
+		_write(GameClock.date_string())
 	elif lower == "sudo update":
 		_write("[sudo] password for user: ********")
 		_write("package room45-radio is already the newest version")
@@ -939,7 +962,7 @@ func _leave_chat() -> void:
 	if _chat != null:
 		_chat.cancel()
 	_write("* disconnected from rostik")
-	_set_header(HEADER_IDLE)
+	_set_header(_idle_header())
 	_refresh_prompt_line()
 
 
@@ -1148,6 +1171,12 @@ func _set_header(text: String) -> void:
 		_header.text = text
 
 
+func _idle_header() -> String:
+	var text := "%s // %s" % [HEADER_IDLE, GameClock.datetime_string(false)]
+	_last_idle_header = text
+	return text
+
+
 func _show_transcript() -> void:
 	if _chat == null or not _chat.has_saved_conversation():
 		_write("rostik.icq: пусто")
@@ -1256,8 +1285,7 @@ func _load_files() -> void:
 
 
 func _now() -> String:
-	var t := Time.get_time_dict_from_system()
-	return "%02d:%02d" % [t.hour, t.minute]
+	return GameClock.time_string(false)
 
 
 func _refresh_log() -> void:

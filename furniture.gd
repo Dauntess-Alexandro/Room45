@@ -42,6 +42,22 @@ const COMPUTER_GLB := "res://models/retro_computer.glb"
 const COMPUTER_TARGET_H := 0.42   # overall height in metres (tweak to taste)
 const COMPUTER_YAW := 90.0        # face the screen toward the sofa
 
+const PORTRAIT_GLB := "res://models/portrait.glb"
+const PORTRAIT_TARGET_H := 0.62
+const PORTRAIT_WIDTH_STRETCH := 1.1314758
+const PORTRAIT_CENTER_Y := 1.68
+const PORTRAIT_CENTER_Z := 1.35
+
+const WOODEN_SHELF_GLB := "res://models/wooden_shelf.glb"
+const WOODEN_SHELF_TARGET_H := 1.55
+const WOODEN_SHELF_CENTER_Z := 0.56
+const WOODEN_SHELF_WALL_GAP := 0.0
+
+const CLOCK_GLB := "res://models/clock.glb"
+const CLOCK_HANDS_SCRIPT := preload("res://clock_hands.gd")
+const CLOCK_CENTER := Vector3(HALF_W - 0.015, 1.95, 0.78)
+const CLOCK_YAW := -90.0
+
 ## Optional hanging-lamp model. Drop models/chandelier.glb in and it replaces the
 ## procedural chandelier (auto-scaled, hung from the ceiling, centred in the room).
 const CHANDELIER_GLB := "res://models/chandelier.glb"
@@ -117,6 +133,14 @@ func _ready() -> void:
 		var changed := _migrate_wardrobe_if_needed()
 		if not has_node("PetardBox"):
 			_build_petard_box()
+			changed = true
+		if not has_node("WallCalendar"):
+			if _mats.is_empty():
+				_build_materials()
+			_build_wall_calendar()
+			changed = true
+		if not has_node("Portrait") and ResourceLoader.exists(PORTRAIT_GLB):
+			_build_wall_portrait()
 			changed = true
 		if changed and Engine.is_editor_hint():
 			call_deferred("_finish_editor_populate")
@@ -425,7 +449,16 @@ func _finalize_computer_old_desk(table: Node3D, cz: float) -> void:
 
 
 func _build_shelf() -> void:
-	# White cube shelf (Kallax-style), east wall, between desk and door end.
+	if ResourceLoader.exists(WOODEN_SHELF_GLB):
+		var shelf: Node3D = (load(WOODEN_SHELF_GLB) as PackedScene).instantiate()
+		shelf.name = "Shelf"
+		add_child(shelf)
+		call_deferred("_finalize_wooden_shelf", shelf)
+		return
+	_build_shelf_procedural()
+
+
+func _build_shelf_procedural() -> void:
 	var shelf := Node3D.new()
 	shelf.name = "Shelf"
 	add_child(shelf)
@@ -433,17 +466,34 @@ func _build_shelf() -> void:
 	var cz := 0.25
 	var t := 0.03
 	var mat: Material = _mats["shelf"]
-	# Outer shell.
 	_box(shelf, Vector3(0.35, t, 0.75), Vector3(cx, 0.015, cz), mat, "Bottom")
 	_box(shelf, Vector3(0.35, t, 0.75), Vector3(cx, 1.485, cz), mat, "Top")
 	_box(shelf, Vector3(0.35, 1.5, t), Vector3(cx, 0.75, cz - 0.36), mat, "SideA")
 	_box(shelf, Vector3(0.35, 1.5, t), Vector3(cx, 0.75, cz + 0.36), mat, "SideB")
 	_box(shelf, Vector3(0.04, 1.5, 0.75), Vector3(cx + 0.155, 0.75, cz), mat, "Back")
-	# Internal grid -> 2 columns x 4 rows of cubbies.
 	_box(shelf, Vector3(0.33, 1.5, t), Vector3(cx, 0.75, cz), mat, "Divider")
 	for y in [0.375, 0.75, 1.125]:
 		_box(shelf, Vector3(0.33, t, 0.75), Vector3(cx, y, cz), mat, "Shelf")
 	_collider(shelf, Vector3(0.35, 1.5, 0.75), Vector3(cx, 0.75, cz), "ShelfBody")
+
+
+func _finalize_wooden_shelf(shelf: Node3D) -> void:
+	if not is_instance_valid(shelf):
+		return
+	var lbox := _local_aabb(shelf)
+	var k := WOODEN_SHELF_TARGET_H / maxf(lbox.size.y, 0.001)
+	var sbox := AABB(lbox.position * k, lbox.size * k)
+	shelf.scale = Vector3.ONE * k
+	shelf.position = Vector3(
+		HALF_W - WOODEN_SHELF_WALL_GAP - sbox.end.x,
+		-sbox.position.y,
+		WOODEN_SHELF_CENTER_Z - sbox.get_center().z,
+	)
+	_collider(self, sbox.size, Vector3(
+		shelf.position.x + sbox.get_center().x,
+		shelf.position.y + sbox.get_center().y,
+		shelf.position.z + sbox.get_center().z
+	), "ShelfBody")
 
 
 func _build_wardrobe() -> void:
@@ -988,5 +1038,51 @@ func _build_decals() -> void:
 	# Wall art on the east wall above the desk (faces -X into the room).
 	var x := HALF_W - 0.015
 	_decal(self, "res://decal_worldmap.png", Vector2(1.6, 0.95), Vector3(x, 1.78, -0.7), Vector3(0, -90, 0), "WorldMap")
-	_decal(self, "res://decal_clock.png", Vector2(0.4, 0.4), Vector3(x, 1.95, 0.78), Vector3(0, -90, 0), "Clock")
-	_decal(self, "res://decal_frames.png", Vector2(0.35, 0.42), Vector3(x, 1.68, 1.35), Vector3(0, -90, 0), "Portrait", true)
+	_build_wall_clock()
+	_build_wall_calendar()
+	_build_wall_portrait()
+
+
+func _build_wall_clock() -> void:
+	if not ResourceLoader.exists(CLOCK_GLB):
+		return
+	var clock: Node3D = (load(CLOCK_GLB) as PackedScene).instantiate()
+	clock.name = "Clock"
+	clock.set_script(CLOCK_HANDS_SCRIPT)
+	add_child(clock)
+	clock.rotation_degrees = Vector3(0.0, CLOCK_YAW, 0.0)
+	clock.position = CLOCK_CENTER
+
+
+func _build_wall_calendar() -> void:
+	var cal := _decal(self, "res://_raw/calendar.png", Vector2(0.56, 0.75), Vector3(-0.88, 1.55, HALF_L - 0.015), Vector3(0, 180, 0), "WallCalendar")
+	var mat := cal.material_override as StandardMaterial3D
+	if mat != null:
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
+
+
+func _build_wall_portrait() -> void:
+	if not ResourceLoader.exists(PORTRAIT_GLB):
+		return
+	var portrait: Node3D = (load(PORTRAIT_GLB) as PackedScene).instantiate()
+	portrait.name = "Portrait"
+	add_child(portrait)
+	call_deferred("_finalize_wall_portrait", portrait)
+
+
+func _finalize_wall_portrait(portrait: Node3D) -> void:
+	if not is_instance_valid(portrait):
+		return
+	var lbox := _local_aabb(portrait)
+	var basis := Basis.from_euler(Vector3(0.0, PI, 0.0))
+	var stretched_basis := basis.scaled(Vector3(1.0, 1.0, PORTRAIT_WIDTH_STRETCH))
+	var rbox := _aabb_transformed(lbox, Transform3D(stretched_basis, Vector3.ZERO))
+	var k := PORTRAIT_TARGET_H / maxf(rbox.size.y, 0.001)
+	var sbox := AABB(rbox.position * k, rbox.size * k)
+	portrait.rotation_degrees = Vector3(0.0, 180.0, 0.0)
+	portrait.scale = Vector3(k, k, k * PORTRAIT_WIDTH_STRETCH)
+	portrait.position = Vector3(
+		HALF_W - 0.015 - sbox.end.x,
+		PORTRAIT_CENTER_Y - sbox.get_center().y,
+		PORTRAIT_CENTER_Z - sbox.get_center().z,
+	)

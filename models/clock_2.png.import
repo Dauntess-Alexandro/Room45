@@ -2,31 +2,35 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://coomk6hledwk"
-path="res://.godot/imported/portrait_custom.png-39b704cc18144b6011e327c136401dc0.ctex"
+uid="uid://dkd1ktyowaqwi"
+path.s3tc="res://.godot/imported/clock_2.png-6a4f0072a2ced6fbf66d091b9634f2b2.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+generator_parameters={
+"md5": "5d2b38656874eda57f485378f8495f23"
 }
 
 [deps]
 
-source_file="res://_raw/portrait_custom.png"
-dest_files=["res://.godot/imported/portrait_custom.png-39b704cc18144b6011e327c136401dc0.ctex"]
+source_file="res://models/clock_2.png"
+dest_files=["res://.godot/imported/clock_2.png-6a4f0072a2ced6fbf66d091b9634f2b2.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
-compress/normal_map=0
+compress/normal_map=1
 compress/channel_pack=0
-mipmaps/generate=false
+mipmaps/generate=true
 mipmaps/limit=-1
-roughness/mode=0
-roughness/src_normal=""
+roughness/mode=1
+roughness/src_normal="res://models/clock_2.png"
 process/channel_remap/red=0
 process/channel_remap/green=1
 process/channel_remap/blue=2
@@ -37,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0
