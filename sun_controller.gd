@@ -15,7 +15,7 @@ extends DirectionalLight3D
 var _environment: Environment
 var _window_lights: Array[OmniLight3D] = []
 var _window_beam: SpotLight3D
-var _daylight_mat: StandardMaterial3D
+var _daylight_mats: Array[StandardMaterial3D] = []
 
 
 func _ready() -> void:
@@ -34,15 +34,32 @@ func _resolve_targets() -> void:
 
 	_resolve_window_lights()
 	_window_beam = get_node_or_null(window_beam_path) as SpotLight3D
+	_resolve_daylight_meshes()
 
+
+func _resolve_daylight_meshes() -> void:
+	_daylight_mats.clear()
 	var daylight := get_node_or_null(daylight_mesh_path) as MeshInstance3D
 	if daylight != null:
-		var mat := daylight.material_override as StandardMaterial3D
-		if mat != null:
-			_daylight_mat = mat.duplicate()
-			_daylight_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-			_daylight_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-			daylight.material_override = _daylight_mat
+		_prepare_daylight_mesh(daylight)
+		var parent := daylight.get_parent()
+		if parent != null:
+			for sibling in parent.find_children("*Daylight", "MeshInstance3D", false, false):
+				if sibling != daylight:
+					_prepare_daylight_mesh(sibling as MeshInstance3D)
+
+
+func _prepare_daylight_mesh(daylight: MeshInstance3D) -> void:
+	if daylight == null:
+		return
+	var mat := daylight.material_override as StandardMaterial3D
+	if mat == null:
+		return
+	var daylight_mat := mat.duplicate()
+	daylight_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	daylight_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	daylight.material_override = daylight_mat
+	_daylight_mats.append(daylight_mat)
 
 
 func _apply_time_of_day() -> void:
@@ -77,9 +94,10 @@ func _apply_time_of_day() -> void:
 		_environment.ambient_light_energy = lerpf(0.08, 0.5, daylight)
 		_environment.background_color = _background_color(daylight, day_t, horizon_warmth)
 
-	if _daylight_mat != null:
+	if not _daylight_mats.is_empty():
 		var alpha := lerpf(0.05, 0.72, daylight)
-		_daylight_mat.albedo_color = Color(color.r, color.g, color.b, alpha)
+		for mat in _daylight_mats:
+			mat.albedo_color = Color(color.r, color.g, color.b, alpha)
 
 
 func _resolve_window_lights() -> void:

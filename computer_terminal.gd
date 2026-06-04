@@ -81,6 +81,11 @@ const DROPOUT_CHANCE := 0.10   ## chance a sent message hits a fake dial-up drop
 const ERASE_CHANCE := 0.22     ## chance Ростик "erases and retypes" a short message
 const WORLD_EVENTS_ENABLED := true   ## #4: chat can affect the room (свет only for now)
 const FILES_SAVE := "user://rostik_files.save"
+const SCREEN_CUTOUT_X_INSET := 0.90
+const SCREEN_CUTOUT_Y_TOP_INSET := 0.86
+const SCREEN_CUTOUT_Y_BOTTOM_INSET := 0.99
+const SCREEN_CUTOUT_Z_MIN := -0.35
+const SCREEN_CUTOUT_Z_MAX := 0.9
 const DROPOUT_EXCUSES := [
 	"сорян, мамка трубку подняла, инет скинуло",
 	"бля связь оборвалась, телефон занят был",
@@ -103,6 +108,7 @@ func _ready() -> void:
 	if _prompt != null:
 		_prompt_label = _prompt.get_node_or_null("PromptLabel") as Label
 	_build_viewport()
+	_cut_computer_screen_occluder()
 	_apply_screen_texture()
 	_setup_boot_audio()
 	_setup_power_led()
@@ -423,10 +429,98 @@ func _apply_screen_texture() -> void:
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-	mat.no_depth_test = true
 	mat.render_priority = 10
 	_screen.material_override = mat
 	_screen_mat = mat
+
+
+func _cut_computer_screen_occluder() -> void:
+	if _screen == null:
+		return
+	var computer := _screen.get_parent() as Node3D
+	if computer == null or computer.has_meta("terminal_screen_cutout_done"):
+		return
+	var screen_size := _screen_mesh_size()
+	var half := screen_size * 0.5
+	var cutout_min := Vector2(-half.x * SCREEN_CUTOUT_X_INSET, -half.y * SCREEN_CUTOUT_Y_BOTTOM_INSET)
+	var cutout_max := Vector2(half.x * SCREEN_CUTOUT_X_INSET, half.y * SCREEN_CUTOUT_Y_TOP_INSET)
+	var cutout_rect := Rect2(cutout_min, cutout_max - cutout_min)
+	var changed := false
+	for node in computer.find_children("*", "MeshInstance3D", true, false):
+		var mesh_node := node as MeshInstance3D
+		if mesh_node == null or mesh_node == _screen or mesh_node.mesh == null:
+			continue
+		var cut_mesh := _mesh_with_screen_cutout(mesh_node, cutout_rect)
+		if cut_mesh != null:
+			mesh_node.mesh = cut_mesh
+			changed = true
+	if changed:
+		computer.set_meta("terminal_screen_cutout_done", true)
+
+
+func _screen_mesh_size() -> Vector2:
+	if _screen != null and _screen.mesh is QuadMesh:
+		return (_screen.mesh as QuadMesh).size
+	if _screen != null and _screen.mesh != null:
+		var aabb := _screen.mesh.get_aabb()
+		return Vector2(aabb.size.x, aabb.size.y)
+	return Vector2(1.0, 1.0)
+
+
+func _mesh_with_screen_cutout(mesh_node: MeshInstance3D, cutout_rect: Rect2) -> ArrayMesh:
+	var source := mesh_node.mesh
+	if source == null:
+		return null
+	var to_screen := _screen.global_transform.affine_inverse() * mesh_node.global_transform
+	var result := ArrayMesh.new()
+	result.resource_name = "%s_terminal_cutout" % source.resource_name
+	var removed_any := false
+	for surface in source.get_surface_count():
+		var primitive: Mesh.PrimitiveType = source.surface_get_primitive_type(surface)
+		var arrays: Array = source.surface_get_arrays(surface)
+		if primitive != Mesh.PRIMITIVE_TRIANGLES:
+			result.add_surface_from_arrays(primitive, arrays)
+			result.surface_set_material(result.get_surface_count() - 1, source.surface_get_material(surface))
+			continue
+		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+		var kept_indices := PackedInt32Array()
+		var tri_count := indices.size() / 3 if not indices.is_empty() else vertices.size() / 3
+		for tri in tri_count:
+			var i0 := indices[tri * 3] if not indices.is_empty() else tri * 3
+			var i1 := indices[tri * 3 + 1] if not indices.is_empty() else tri * 3 + 1
+			var i2 := indices[tri * 3 + 2] if not indices.is_empty() else tri * 3 + 2
+			var p0 := to_screen * vertices[i0]
+			var p1 := to_screen * vertices[i1]
+			var p2 := to_screen * vertices[i2]
+			if _is_screen_occluder_triangle(p0, p1, p2, cutout_rect):
+				removed_any = true
+				continue
+			kept_indices.append(i0)
+			kept_indices.append(i1)
+			kept_indices.append(i2)
+		arrays[Mesh.ARRAY_INDEX] = kept_indices
+		result.add_surface_from_arrays(primitive, arrays)
+		result.surface_set_material(result.get_surface_count() - 1, source.surface_get_material(surface))
+	return result if removed_any else null
+
+
+func _is_screen_occluder_triangle(p0: Vector3, p1: Vector3, p2: Vector3, cutout_rect: Rect2) -> bool:
+	var center := (p0 + p1 + p2) / 3.0
+	return (
+		_is_screen_occluder_point(center, cutout_rect)
+		or _is_screen_occluder_point(p0, cutout_rect)
+		or _is_screen_occluder_point(p1, cutout_rect)
+		or _is_screen_occluder_point(p2, cutout_rect)
+	)
+
+
+func _is_screen_occluder_point(point: Vector3, cutout_rect: Rect2) -> bool:
+	return (
+		cutout_rect.has_point(Vector2(point.x, point.y))
+		and point.z >= SCREEN_CUTOUT_Z_MIN
+		and point.z <= SCREEN_CUTOUT_Z_MAX
+	)
 
 
 func _set_screen_emission(value: float) -> void:

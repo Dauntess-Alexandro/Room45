@@ -9,7 +9,6 @@
 [ext_resource type="Texture2D" uid="uid://qyq67o3xtig2" path="res://tex_floor.jpg" id="5_floor"]
 [ext_resource type="Texture2D" uid="uid://b1kby3daobgjg" path="res://tex_ceiling.jpg" id="6_ceil"]
 [ext_resource type="Texture2D" uid="uid://1vl85axgj05h" path="res://tex_rug.jpg" id="6_d13ii"]
-[ext_resource type="Texture2D" uid="uid://dkq4qxftsfmvo" path="res://decal_door.png" id="7_door"]
 [ext_resource type="PackedScene" uid="uid://bqatecgnftwxh" path="res://models/retro_computer.glb" id="8_0odxb"]
 [ext_resource type="PackedScene" uid="uid://b8inbulljamjy" path="res://models/computer_old_desk.glb" id="8_olddesk"]
 [ext_resource type="Shader" uid="uid://voa8q1tw2vsm" path="res://retro_vhs.gdshader" id="8_shader"]
@@ -61,6 +60,56 @@ uv1_triplanar = true
 uv1_world_triplanar = true
 texture_filter = 1
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e71vb"]
+shading_mode = 0
+albedo_color = Color(0.85, 0.92, 1, 1)
+texture_filter = 1
+
+[sub_resource type="BoxMesh" id="ZalDaylightMesh"]
+size = Vector3(3.75, 1.2, 0.012)
+
+[sub_resource type="BoxMesh" id="ZalDoorDaylightMesh"]
+size = Vector3(0.86, 2.02, 0.012)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vke2r"]
+transparency = 1
+cull_mode = 2
+albedo_color = Color(0.7, 0.85, 1, 0.16)
+roughness = 0.05
+texture_filter = 1
+
+[sub_resource type="BoxMesh" id="ZalGlassMesh"]
+size = Vector3(3.85, 1.28, 0.015)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ruth0"]
+albedo_color = Color(0.93, 0.94, 0.96, 1)
+roughness = 0.5
+texture_filter = 1
+
+[sub_resource type="BoxMesh" id="ZalJambMesh"]
+size = Vector3(0.06, 2.15, 0.06)
+
+[sub_resource type="BoxMesh" id="ZalHeadMesh"]
+size = Vector3(5, 0.06, 0.06)
+
+[sub_resource type="BoxMesh" id="ZalSillMesh"]
+size = Vector3(3.87, 0.06, 0.22)
+
+[sub_resource type="BoxMesh" id="ZalWinTransomMesh"]
+size = Vector3(3.87, 0.06, 0.06)
+
+[sub_resource type="BoxMesh" id="ZalWinMullionMesh"]
+size = Vector3(0.05, 1.28, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1vm84"]
+transparency = 1
+albedo_color = Color(1, 1, 1, 0.55)
+albedo_texture = ExtResource("12_qsp4k")
+texture_filter = 1
+
+[sub_resource type="QuadMesh" id="ZalTulleMesh"]
+size = Vector2(4.9, 1.5)
+
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lswn8"]
 albedo_texture = ExtResource("6_d13ii")
 uv1_scale = Vector3(1, 1, 3)
@@ -75,7 +124,6 @@ size = Vector3(0.84, 0.74, 1.34)
 [sub_resource type="StandardMaterial3D" id="ScreenMat"]
 render_priority = 10
 cull_mode = 2
-no_depth_test = true
 shading_mode = 0
 albedo_color = Color(0, 0, 0, 1)
 texture_filter = 1
@@ -110,28 +158,14 @@ bottom_radius = 0.025
 height = 1.0999999
 radial_segments = 8
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e71vb"]
-shading_mode = 0
-albedo_color = Color(0.85, 0.92, 1, 1)
-texture_filter = 1
-
 [sub_resource type="BoxMesh" id="BoxMesh_rnkwl"]
-size = Vector3(1.7, 2.15, 0.02)
+size = Vector3(0.76, 1.22, 0.012)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vke2r"]
-transparency = 1
-cull_mode = 2
-albedo_color = Color(0.7, 0.85, 1, 0.16)
-roughness = 0.05
-texture_filter = 1
+[sub_resource type="BoxMesh" id="RoomDoorDaylightMesh"]
+size = Vector3(0.78, 1.12, 0.012)
 
 [sub_resource type="BoxMesh" id="BoxMesh_uit24"]
 size = Vector3(0.8, 1.3, 0.015)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ruth0"]
-albedo_color = Color(0.93, 0.94, 0.96, 1)
-roughness = 0.5
-texture_filter = 1
 
 [sub_resource type="BoxMesh" id="BoxMesh_rm4vd"]
 size = Vector3(0.86, 0.05, 0.2)
@@ -153,12 +187,6 @@ size = Vector3(0.05, 2.15, 0.06)
 
 [sub_resource type="BoxMesh" id="BoxMesh_rqtf5"]
 size = Vector3(0.8, 0.05, 0.06)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1vm84"]
-transparency = 1
-albedo_color = Color(1, 1, 1, 0.55)
-albedo_texture = ExtResource("12_qsp4k")
-texture_filter = 1
 
 [sub_resource type="QuadMesh" id="QuadMesh_wu3dr"]
 size = Vector2(1.5, 1.35)
@@ -189,21 +217,6 @@ size = Vector3(0.632502, 1.570843, 1.072863)
 
 [sub_resource type="BoxShape3D" id="SofaShape"]
 size = Vector3(1.07, 0.30947265, 2.42)
-
-[sub_resource type="StandardMaterial3D" id="DoorMat"]
-transparency = 2
-alpha_scissor_threshold = 0.5
-alpha_antialiasing_mode = 0
-cull_mode = 2
-albedo_texture = ExtResource("7_door")
-roughness = 0.7
-texture_filter = 1
-
-[sub_resource type="BoxMesh" id="DoorMesh"]
-size = Vector3(0.9, 2, 0.06)
-
-[sub_resource type="BoxShape3D" id="DoorShape"]
-size = Vector3(0.9, 2, 0.06)
 
 [sub_resource type="StandardMaterial3D" id="SwitchMat"]
 albedo_color = Color(0.05, 0.05, 0.06, 1)
@@ -246,12 +259,6 @@ use_collision = true
 size = Vector3(2.62, 0.1, 4.6)
 material = SubResource("CeilingMat")
 
-[node name="WallNorth" type="CSGBox3D" parent="Room" unique_id=1546027081]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 2.35)
-use_collision = true
-size = Vector3(2.62, 2.7, 0.1)
-material = SubResource("WallMat")
-
 [node name="WallSouth" type="CSGBox3D" parent="Room" unique_id=683402555]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, -2.35)
 use_collision = true
@@ -269,6 +276,183 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.36, 1.35, 0)
 use_collision = true
 size = Vector3(0.1, 2.7, 4.6)
 material = SubResource("WallMat")
+
+[node name="Zal" type="Node3D" parent="." unique_id=2101051092]
+
+[node name="Floor" type="CSGBox3D" parent="Zal" unique_id=1012927745]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, -0.05, 4.975)
+use_collision = true
+size = Vector3(5.7, 0.1, 5.45)
+material = SubResource("FloorMat")
+
+[node name="Ceiling" type="CSGBox3D" parent="Zal" unique_id=1628851000]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.75, 4.975)
+use_collision = true
+size = Vector3(5.7, 0.1, 5.45)
+material = SubResource("CeilingMat")
+
+[node name="WallWest" type="CSGBox3D" parent="Zal" unique_id=1180580119]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 1.35, 5)
+use_collision = true
+size = Vector3(0.1, 2.7, 5.4)
+material = SubResource("WallMat")
+
+[node name="WallFar" type="CSGBox3D" parent="Zal" unique_id=621092913]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1.35, 7.65)
+use_collision = true
+size = Vector3(5.7, 2.7, 0.1)
+material = SubResource("WallMat")
+
+[node name="WallShared" type="CSGCombiner3D" parent="Zal" unique_id=297256720]
+use_collision = true
+
+[node name="Slab" type="CSGBox3D" parent="Zal/WallShared" unique_id=49998779]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.72, 1.35, 2.35)
+size = Vector3(6.26, 2.7, 0.1)
+material = SubResource("WallMat")
+
+[node name="DoorHole" type="CSGBox3D" parent="Zal/WallShared" unique_id=634510050]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 1.025, 2.35)
+operation = 2
+size = Vector3(0.95, 2.05, 0.4)
+
+[node name="WallEast" type="CSGCombiner3D" parent="Zal" unique_id=990814887]
+use_collision = true
+
+[node name="Slab" type="CSGBox3D" parent="Zal/WallEast" unique_id=119030622]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.8, 1.35, 5)
+size = Vector3(0.1, 2.7, 5.4)
+material = SubResource("WallMat")
+
+[node name="CorridorHole" type="CSGBox3D" parent="Zal/WallEast" unique_id=1217840426]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.8, 1.025, 3.5)
+operation = 2
+size = Vector3(0.4, 2.05, 0.95)
+
+[node name="CorridorStub" type="Node3D" parent="Zal" unique_id=747615570]
+
+[node name="Floor" type="CSGBox3D" parent="Zal/CorridorStub" unique_id=869068255]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.4, -0.05, 3.5)
+use_collision = true
+size = Vector3(1.2, 0.1, 1)
+material = SubResource("FloorMat")
+
+[node name="Ceiling" type="CSGBox3D" parent="Zal/CorridorStub" unique_id=104364424]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.4, 2.75, 3.5)
+use_collision = true
+size = Vector3(1.2, 0.1, 1)
+material = SubResource("CeilingMat")
+
+[node name="BackCap" type="CSGBox3D" parent="Zal/CorridorStub" unique_id=2047991374]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.35, 3.5)
+use_collision = true
+size = Vector3(0.1, 2.7, 1)
+material = SubResource("WallMat")
+
+[node name="SideS" type="CSGBox3D" parent="Zal/CorridorStub" unique_id=308524594]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.4, 1.35, 3)
+use_collision = true
+size = Vector3(1.2, 2.7, 0.1)
+material = SubResource("WallMat")
+
+[node name="SideN" type="CSGBox3D" parent="Zal/CorridorStub" unique_id=3190434]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.4, 1.35, 4)
+use_collision = true
+size = Vector3(1.2, 2.7, 0.1)
+material = SubResource("WallMat")
+
+[node name="Balcony" type="Node3D" parent="Zal" unique_id=481150561]
+
+[node name="Daylight" type="MeshInstance3D" parent="Zal/Balcony" unique_id=334796450]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.275, 1.49, 7.58)
+material_override = SubResource("StandardMaterial3D_e71vb")
+mesh = SubResource("ZalDaylightMesh")
+
+[node name="DoorDaylight" type="MeshInstance3D" parent="Zal/Balcony" unique_id=255775470]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.7500105, 1.076792, 7.580255)
+material_override = SubResource("StandardMaterial3D_e71vb")
+mesh = SubResource("ZalDoorDaylightMesh")
+
+[node name="WinGlass" type="MeshInstance3D" parent="Zal/Balcony" unique_id=151951403]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.275, 1.49, 7.54)
+material_override = SubResource("StandardMaterial3D_vke2r")
+mesh = SubResource("ZalGlassMesh")
+
+[node name="JambW" type="MeshInstance3D" parent="Zal/Balcony" unique_id=233853363]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7, 1.075, 7.5)
+material_override = SubResource("StandardMaterial3D_ruth0")
+mesh = SubResource("ZalJambMesh")
+
+[node name="JambE" type="MeshInstance3D" parent="Zal/Balcony" unique_id=237814503]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.25, 1.075, 7.5)
+material_override = SubResource("StandardMaterial3D_ruth0")
+mesh = SubResource("ZalJambMesh")
+
+[node name="DoorMullion" type="MeshInstance3D" parent="Zal/Balcony" unique_id=594494201]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.25, 1.075, 7.5)
+material_override = SubResource("StandardMaterial3D_ruth0")
+mesh = SubResource("ZalJambMesh")
+
+[node name="Head" type="MeshInstance3D" parent="Zal/Balcony" unique_id=2043908849]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.775, 2.15, 7.5)
+material_override = SubResource("StandardMaterial3D_ruth0")
+mesh = SubResource("ZalHeadMesh")
+
+[node name="Base" type="MeshInstance3D" parent="Zal/Balcony" unique_id=379370014]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.775, 0.02, 7.5)
+material_override = SubResource("StandardMaterial3D_ruth0")
+mesh = SubResource("ZalHeadMesh")
+
+[node name="WinSill" type="MeshInstance3D" parent="Zal/Balcony" unique_id=1417029989]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.275, 0.85, 7.48)
+material_override = SubResource("StandardMaterial3D_ruth0")
+mesh = SubResource("ZalSillMesh")
+
+[node name="WinTransom" type="MeshInstance3D" parent="Zal/Balcony" unique_id=1430086135]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.275, 0.85, 7.5)
+material_override = SubResource("StandardMaterial3D_ruth0")
+mesh = SubResource("ZalWinTransomMesh")
+
+[node name="Mullion1" type="MeshInstance3D" parent="Zal/Balcony" unique_id=1178663176]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 1.49, 7.52)
+material_override = SubResource("StandardMaterial3D_ruth0")
+mesh = SubResource("ZalWinMullionMesh")
+
+[node name="Mullion2" type="MeshInstance3D" parent="Zal/Balcony" unique_id=1945057528]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.95, 1.49, 7.52)
+material_override = SubResource("StandardMaterial3D_ruth0")
+mesh = SubResource("ZalWinMullionMesh")
+
+[node name="BalconyDoor" parent="Zal/Balcony" unique_id=460612286 instance=ExtResource("12_0odxb")]
+transform = Transform3D(-2.04228, 0, 0, 0, 2.04228, 0, 0, 0, -2.04228, 3.75, 1.0830773, 7.52)
+
+[node name="Tulle" type="MeshInstance3D" parent="Zal/Balcony" unique_id=686090520]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 2.1566975, 1.802178, 7.1937666)
+material_override = SubResource("StandardMaterial3D_1vm84")
+mesh = SubResource("ZalTulleMesh")
+
+[node name="ZalLights" type="Node3D" parent="Zal" unique_id=1193453838]
+
+[node name="Warm1" type="OmniLight3D" parent="Zal/ZalLights" unique_id=659115941]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.45, 3.9)
+light_color = Color(1, 0.86, 0.66, 1)
+light_energy = 1.1
+shadow_enabled = true
+omni_range = 7.0
+
+[node name="Warm2" type="OmniLight3D" parent="Zal/ZalLights" unique_id=683919040]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.45, 6.1)
+light_color = Color(1, 0.86, 0.66, 1)
+light_energy = 1.1
+shadow_enabled = true
+omni_range = 7.0
+
+[node name="WindowFill" type="OmniLight3D" parent="Zal/ZalLights" unique_id=1076088684]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1.6, 7.1)
+light_color = Color(0.75, 0.83, 1, 1)
+light_energy = 0.4
+omni_range = 4.0
+omni_attenuation = 0.35
 
 [node name="ChandelierLights" type="Node3D" parent="." unique_id=44137370]
 
@@ -309,22 +493,22 @@ omni_range = 4.0
 [node name="WindowLight" type="Node3D" parent="." unique_id=1956907168]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -2)
 
-[node name="FillLeft" type="OmniLight3D" parent="WindowLight"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.72, 0.05, 0.0)
+[node name="FillLeft" type="OmniLight3D" parent="WindowLight" unique_id=1463450587]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.72, 0.05, 0)
 light_color = Color(0.75, 0.83, 1, 1)
 light_energy = 0.35
 omni_range = 3.2
 omni_attenuation = 0.38
 
-[node name="FillCenter" type="OmniLight3D" parent="WindowLight"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0, 0.08)
+[node name="FillCenter" type="OmniLight3D" parent="WindowLight" unique_id=1348248240]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.08)
 light_color = Color(0.75, 0.83, 1, 1)
 light_energy = 0.45
 omni_range = 3.4
 omni_attenuation = 0.32
 
-[node name="FillRight" type="OmniLight3D" parent="WindowLight"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.72, 0.05, 0.0)
+[node name="FillRight" type="OmniLight3D" parent="WindowLight" unique_id=1756262744]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.72, 0.05, 0)
 light_color = Color(0.75, 0.83, 1, 1)
 light_energy = 0.35
 omni_range = 3.2
@@ -366,7 +550,7 @@ mesh = SubResource("BoxMesh_a6jrf")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.30953455)
 
 [node name="ComputerOldDesk" parent="Furniture/Desk" unique_id=285943005 instance=ExtResource("8_olddesk")]
-transform = Transform3D(0.48, 0, 0, 0, 0.48, 8.392586e-08, 0, -8.392586e-08, 0.48, 0.7706457, 1.8e-07, -1.2245158)
+transform = Transform3D(-0.48, 0, 4.196293e-08, 0, 0.48, 0, -4.196293e-08, 0, -0.48, 1.0194502, 1.8e-07, -1.2245158)
 
 [node name="DeskBody" type="StaticBody3D" parent="Furniture/Desk" unique_id=2027871166]
 
@@ -378,12 +562,13 @@ shape = SubResource("BoxShape3D_0rl1p")
 transform = Transform3D(0, 0, -0.008522919, 0, 0.008522919, 0, 0.008522919, 0, 0, 0.7736869, 0.74529934, -1.194975)
 
 [node name="ComputerScreen" type="MeshInstance3D" parent="Furniture/Desk/Computer" unique_id=1988444363]
-transform = Transform3D(1.4254757, -0.030206045, 0.25516057, 0.005263181, 1.6747696, 0.110270336, -0.26550418, -0.12897487, 1.3721278, -23.013, 29.048851, -9.787979)
+transform = Transform3D(1.4353062, -0.030781394, 0.25516057, 0.005299477, 1.7066699, 0.11027026, -0.2673352, -0.13143149, 1.3721273, -23.100403, 29.048851, -9.787979)
 material_override = SubResource("ScreenMat")
 mesh = SubResource("ScreenQuad")
 
 [node name="ComputerTerminalHitbox" type="StaticBody3D" parent="Furniture/Desk/Computer" unique_id=1570595863]
 transform = Transform3D(1.4254757, -0.030206045, 0.25516057, 0.005263181, 1.6747696, 0.110270336, -0.26550418, -0.12897487, 1.3721278, -23.013, 29.048851, -9.787979)
+visible = false
 script = ExtResource("2_inter")
 kind = 3
 prompt_text = "USE COMPUTER"
@@ -449,9 +634,14 @@ mesh = SubResource("CylinderMesh_4w656")
 [node name="Balcony" type="Node3D" parent="Furniture" unique_id=213411697]
 
 [node name="Daylight" type="MeshInstance3D" parent="Furniture/Balcony" unique_id=1954290505]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.075, -2.28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 1.52, -2.28)
 material_override = SubResource("StandardMaterial3D_e71vb")
 mesh = SubResource("BoxMesh_rnkwl")
+
+[node name="DoorDaylight" type="MeshInstance3D" parent="Furniture/Balcony" unique_id=245450925]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 1.55, -2.28)
+material_override = SubResource("StandardMaterial3D_e71vb")
+mesh = SubResource("RoomDoorDaylightMesh")
 
 [node name="WindowGlass" type="MeshInstance3D" parent="Furniture/Balcony" unique_id=1608739201]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 1.5, -2.24)
@@ -568,21 +758,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.736, 0.15473631, -0.55)
 shape = SubResource("SofaShape")
 
 [node name="Interactables" type="Node3D" parent="." unique_id=1577011880]
-
-[node name="Door" type="StaticBody3D" parent="Interactables" unique_id=702127638]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 0, 2.27)
-script = ExtResource("2_inter")
-prompt_text = "OPEN / CLOSE DOOR"
-door_open_angle = -95.0
-
-[node name="Mesh" type="MeshInstance3D" parent="Interactables/Door" unique_id=189488057]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 1, 0)
-material_override = SubResource("DoorMat")
-mesh = SubResource("DoorMesh")
-
-[node name="Collision" type="CollisionShape3D" parent="Interactables/Door" unique_id=1113453554]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 1, 0)
-shape = SubResource("DoorShape")
 
 [node name="LightSwitch" type="StaticBody3D" parent="Interactables" unique_id=1432033389]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.28, 1.3, 2)

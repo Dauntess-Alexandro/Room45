@@ -824,12 +824,10 @@ func _build_window() -> void:
 	var pvc: Material = _mats["pvc"]
 	var glass: Material = _mats["glass_win"]
 
-	# Bright daylight behind the whole block (only shows through the glass).
-	_box(win, Vector3(x1 - x0, top, 0.02), Vector3((x0 + x1) * 0.5, top * 0.5, glow_z), _mats["glow"], "Daylight")
-
 	# --- Left: fixed window (glazed above the sill) ---
 	var wl := mull - x0
 	var xcw := (x0 + mull) * 0.5
+	_box(win, Vector3(wl - 0.04, top - sill_y - 0.08, 0.012), Vector3(xcw, (sill_y + top) * 0.5 + 0.02, glow_z), _mats["glow"], "Daylight")
 	_box(win, Vector3(wl, top - sill_y, 0.015), Vector3(xcw, (sill_y + top) * 0.5, glass_z), glass, "WindowGlass")
 	_box(win, Vector3(wl + 0.06, 0.05, 0.20), Vector3(xcw, sill_y, fr_z + 0.04), pvc, "Sill")
 
@@ -837,6 +835,7 @@ func _build_window() -> void:
 	var wd := x1 - mull
 	var xcd := (mull + x1) * 0.5
 	var has_door_glb := ResourceLoader.exists(BALCONY_DOOR_GLB)
+	_box(win, Vector3(wd - 0.12, top - panel_top - 0.08, 0.012), Vector3(xcd, (panel_top + top) * 0.5, glow_z), _mats["glow"], "DoorDaylight")
 	if has_door_glb:
 		var bdoor: Node3D = (load(BALCONY_DOOR_GLB) as PackedScene).instantiate()
 		bdoor.name = "BalconyDoor"
