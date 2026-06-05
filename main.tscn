@@ -251,6 +251,14 @@ size = Vector3(0.26, 0.24, 0.12)
 [sub_resource type="BoxShape3D" id="RoomDoorShape"]
 size = Vector3(0.92, 2, 0.08)
 
+[sub_resource type="BoxMesh" id="DoorCapMesh"]
+size = Vector3(0.83, 0.03, 0.14)
+
+[sub_resource type="StandardMaterial3D" id="DoorCapMat"]
+albedo_color = Color(0.82, 0.83, 0.85, 1)
+roughness = 0.65
+texture_filter = 1
+
 [sub_resource type="ShaderMaterial" id="VHSMat"]
 shader = ExtResource("8_shader")
 shader_parameter/pixel_resolution = Vector2(960, 540)
@@ -936,6 +944,11 @@ door_open_angle = -95.0
 
 [node name="Leaf" parent="Interactables/RoomDoor" instance=ExtResource("38_leaf")]
 transform = Transform3D(0, 0, 0.001, 0, 0.00103, 0, -0.001, 0, 0, 0.479, 0, 0.018)
+
+[node name="TopCap" type="MeshInstance3D" parent="Interactables/RoomDoor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.475, 2.0, 0.04)
+mesh = SubResource("DoorCapMesh")
+material_override = SubResource("DoorCapMat")
 
 [node name="Collision" type="CollisionShape3D" parent="Interactables/RoomDoor" unique_id=327331816]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.475, 1, 0)
