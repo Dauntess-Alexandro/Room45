@@ -36,6 +36,7 @@
 [ext_resource type="PackedScene" uid="uid://r0bohlxpgd03" path="res://models/Osgona chandelier.glb" id="33_osgona"]
 [ext_resource type="PackedScene" uid="uid://c18wwdpmx3r0y" path="res://models/zal_plant.glb" id="34_zalplant"]
 [ext_resource type="PackedScene" uid="uid://pae8dsd7ms3j" path="res://models/light_switch.glb" id="35_lightswitch"]
+[ext_resource type="AudioStream" path="res://sound/switch_click.wav" id="36_click"]
 
 [sub_resource type="Environment" id="Env"]
 background_mode = 1
@@ -885,9 +886,22 @@ kind = 1
 prompt_text = "TOGGLE ZAL LIGHT"
 target_light_path = NodePath("../../Zal/ZalOsgonaChandelier")
 target_light_paths = Array[NodePath]([NodePath("../../Zal/ZalLights/Warm1"), NodePath("../../Zal/ZalLights/Warm2")])
+switch_visual_path = NodePath("ButtonPivot")
+switch_on_rotation_degrees = Vector3(-2, 0, 0)
+switch_off_rotation_degrees = Vector3(2, 0, 0)
+switch_visual_anim_time = 0.09
+click_sound = ExtResource("36_click")
+click_player_path = NodePath("ClickSound")
 
-[node name="Model" parent="Interactables/ZalLightSwitch" unique_id=754310843 instance=ExtResource("35_lightswitch")]
-transform = Transform3D(0.0025, 0, 0, 0, 0.0025, 0, 0, 0, 0.0025, 0.0041999817, 0.039299965, -0.0056319237)
+[node name="ButtonPivot" type="Node3D" parent="Interactables/ZalLightSwitch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0146, 0.106, 0.015)
+
+[node name="Model" parent="Interactables/ZalLightSwitch/ButtonPivot" unique_id=754310843 instance=ExtResource("35_lightswitch")]
+transform = Transform3D(0.0025, 0, 0, 0, 0.0025, 0, 0, 0, 0.0025, -0.0104, -0.0667, -0.020632)
+
+[node name="ClickSound" type="AudioStreamPlayer3D" parent="Interactables/ZalLightSwitch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0146, 0.106, 0.03)
+stream = ExtResource("36_click")
 
 [node name="Collision" type="CollisionShape3D" parent="Interactables/ZalLightSwitch" unique_id=1111684381]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0146, 0.106, 0.03)

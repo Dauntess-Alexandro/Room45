@@ -38,6 +38,10 @@ enum Kind { DOOR, LIGHT_SWITCH, PICKUP, COMPUTER, COMPUTER_POWER }
 @export_group("Computer")
 @export var target_terminal_path: NodePath   ## Node with open_terminal(player)
 
+@export_group("Sound")
+@export var click_sound: AudioStream         ## Played on each switch toggle
+@export var click_player_path: NodePath      ## AudioStreamPlayer3D used to play it
+
 # --- Internal state ----------------------------------------------------------
 var _door_open: bool = false
 var _door_tween: Tween
@@ -150,6 +154,8 @@ func _set_light_switch_visual(is_on: bool, animate: bool) -> void:
 	var target_rotation := switch_on_rotation_degrees if is_on else switch_off_rotation_degrees
 	if _switch_visual_tween != null and _switch_visual_tween.is_running():
 		_switch_visual_tween.kill()
+	if animate:
+		_play_click()
 	if animate and is_inside_tree() and switch_visual_anim_time > 0.0:
 		# Tactile rocker "click": snap a touch past the target, then settle back.
 		var from_rotation := visual.rotation_degrees
@@ -161,6 +167,16 @@ func _set_light_switch_visual(is_on: bool, animate: bool) -> void:
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	else:
 		visual.rotation_degrees = target_rotation
+
+
+func _play_click() -> void:
+	if click_sound == null:
+		return
+	var player := get_node_or_null(click_player_path) as AudioStreamPlayer3D
+	if player == null:
+		return
+	player.stream = click_sound
+	player.play()
 
 
 # --- Pickup ------------------------------------------------------------------
