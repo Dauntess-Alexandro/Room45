@@ -30,10 +30,11 @@ enum Kind { DOOR, LIGHT_SWITCH, PICKUP, COMPUTER, COMPUTER_POWER }
 @export var default_light_energy: float = 2.0
 
 @export_group("Switch Visual")
-@export var switch_visual_path: NodePath
-@export var switch_on_rotation_degrees: Vector3 = Vector3.ZERO
-@export var switch_off_rotation_degrees: Vector3 = Vector3(12.0, 0.0, 0.0)
-@export var switch_visual_anim_time: float = 0.12
+@export var switch_visual_path: NodePath              ## Node3D that tilts (e.g. the rocker key)
+@export var switch_tilt_axis: Vector3 = Vector3(1, 0, 0)  ## Hinge axis, in the visual's local space
+@export var switch_on_tilt_degrees: float = -2.0      ## Tilt when the light is ON
+@export var switch_off_tilt_degrees: float = 2.0      ## Tilt when the light is OFF
+@export var switch_visual_anim_time: float = 0.09
 
 @export_group("Computer")
 @export var target_terminal_path: NodePath   ## Node with open_terminal(player)
@@ -47,11 +48,15 @@ var _door_open: bool = false
 var _door_tween: Tween
 var _switch_visual_tween: Tween
 var _saved_energy: float = 2.0
+var _switch_rest_basis: Basis
+var _switch_rest_captured: bool = false
+var _switch_angle: float = 0.0
 
 
 func _ready() -> void:
 	_saved_energy = default_light_energy
 	if kind == Kind.LIGHT_SWITCH and not switch_visual_path.is_empty():
+		_capture_switch_rest()
 		call_deferred("_sync_light_switch_visual")
 
 
@@ -143,6 +148,15 @@ func _sync_light_switch_visual() -> void:
 		_set_light_switch_visual(_has_enabled_light(lights), false)
 
 
+func _capture_switch_rest() -> void:
+	var visual := get_node_or_null(switch_visual_path) as Node3D
+	if visual != null:
+		_switch_rest_basis = visual.transform.basis
+		_switch_rest_captured = true
+
+
+## Tilts only the rocker key about its local hinge axis, relative to the rest
+## pose captured at startup (so the key's baked import orientation is preserved).
 func _set_light_switch_visual(is_on: bool, animate: bool) -> void:
 	if switch_visual_path.is_empty():
 		return
@@ -150,23 +164,36 @@ func _set_light_switch_visual(is_on: bool, animate: bool) -> void:
 	if visual == null:
 		push_warning("Interactable '%s': switch_visual_path is not set or not found." % name)
 		return
+	if not _switch_rest_captured:
+		_capture_switch_rest()
 
-	var target_rotation := switch_on_rotation_degrees if is_on else switch_off_rotation_degrees
+	var target_deg := switch_on_tilt_degrees if is_on else switch_off_tilt_degrees
 	if _switch_visual_tween != null and _switch_visual_tween.is_running():
 		_switch_visual_tween.kill()
 	if animate:
 		_play_click()
 	if animate and is_inside_tree() and switch_visual_anim_time > 0.0:
 		# Tactile rocker "click": snap a touch past the target, then settle back.
-		var from_rotation := visual.rotation_degrees
-		var overshoot := target_rotation + (target_rotation - from_rotation) * 0.22
+		var start_deg := _switch_angle
+		var overshoot := target_deg + (target_deg - start_deg) * 0.22
 		_switch_visual_tween = create_tween()
-		_switch_visual_tween.tween_property(visual, "rotation_degrees", overshoot, switch_visual_anim_time * 0.6) \
+		_switch_visual_tween.tween_method(_apply_switch_tilt, start_deg, overshoot, switch_visual_anim_time * 0.6) \
 			.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
-		_switch_visual_tween.tween_property(visual, "rotation_degrees", target_rotation, switch_visual_anim_time * 0.4) \
+		_switch_visual_tween.tween_method(_apply_switch_tilt, overshoot, target_deg, switch_visual_anim_time * 0.4) \
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	else:
-		visual.rotation_degrees = target_rotation
+		_apply_switch_tilt(target_deg)
+
+
+func _apply_switch_tilt(deg: float) -> void:
+	_switch_angle = deg
+	var visual := get_node_or_null(switch_visual_path) as Node3D
+	if visual == null:
+		return
+	var axis := switch_tilt_axis.normalized()
+	if axis.is_zero_approx():
+		axis = Vector3(1, 0, 0)
+	visual.transform.basis = _switch_rest_basis * Basis(axis, deg_to_rad(deg))
 
 
 func _play_click() -> void:
