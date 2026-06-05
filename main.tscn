@@ -932,7 +932,7 @@ shape = SubResource("ZalSwitchShape")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.055, 0, 2.35)
 script = ExtResource("2_inter")
 prompt_text = "OPEN DOOR"
-door_open_angle = 95.0
+door_open_angle = -95.0
 
 [node name="Leaf" parent="Interactables/RoomDoor" instance=ExtResource("38_leaf")]
 transform = Transform3D(0, 0, 0.001, 0, 0.001, 0, -0.001, 0, 0, 0.479, 0, 0.018)
