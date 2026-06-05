@@ -132,6 +132,13 @@ func _update_interaction() -> void:
 		var collider := interaction_ray.get_collider()
 		if collider is Interactable:
 			target = collider
+			# Some interactables (e.g. a wall switch) should only respond at
+			# arm's reach. Honour their per-object distance limit.
+			var max_dist: float = (collider as Interactable).max_interact_distance
+			if max_dist > 0.0:
+				var dist := interaction_ray.global_position.distance_to(interaction_ray.get_collision_point())
+				if dist > max_dist:
+					target = null
 
 	# Update the on-screen prompt only when the target changes.
 	if target != _current_target:

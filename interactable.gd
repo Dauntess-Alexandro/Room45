@@ -19,6 +19,8 @@ enum Kind { DOOR, LIGHT_SWITCH, PICKUP, COMPUTER, COMPUTER_POWER }
 @export var kind: Kind = Kind.DOOR
 ## Shown next to the "[E]" indicator in the HUD.
 @export var prompt_text: String = "INTERACT"
+## Max distance (m) at which this can be used. 0 = no limit (full ray length).
+@export var max_interact_distance: float = 0.0
 
 @export_group("Door")
 @export var door_open_angle: float = 95.0   ## degrees

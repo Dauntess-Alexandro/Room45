@@ -902,6 +902,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.05, 1.15, 2.406)
 script = ExtResource("2_inter")
 kind = 1
 prompt_text = "TOGGLE ZAL LIGHT"
+max_interact_distance = 0.8
 target_light_path = NodePath("../../Zal/ZalOsgonaChandelier")
 target_light_paths = Array[NodePath]([NodePath("../../Zal/ZalLights/Warm1"), NodePath("../../Zal/ZalLights/Warm2")])
 switch_visual_path = NodePath("Model/Sketchfab_model/light switch_obj_cleaner_materialmerger_gles/Rocker")
@@ -916,7 +917,7 @@ transform = Transform3D(0.0025, 0, 0, 0, 0.0025, 0, 0, 0, 0.0025, 0.0042, 0.0393
 [node name="ClickSound" type="AudioStreamPlayer3D" parent="Interactables/ZalLightSwitch" unique_id=1400018095]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0146, 0.106, 0.03)
 stream = ExtResource("36_click")
-volume_db = -10.05
+volume_db = -24.8
 
 [node name="Collision" type="CollisionShape3D" parent="Interactables/ZalLightSwitch" unique_id=1111684381]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0146, 0.106, 0.03)
