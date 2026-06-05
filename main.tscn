@@ -481,58 +481,66 @@ transform = Transform3D(0.001, 0, 0, 0, 0.001, 0, 0, 0, 0.001, 2, 2.248, 5)
 [node name="BulbLightN" type="OmniLight3D" parent="Zal/ZalOsgonaChandelier" unique_id=154523643]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 39.925, 301.729)
 light_color = Color(1, 0.84, 0.58, 1)
-light_energy = 0.55
+light_energy = 0.0
 omni_range = 1.6
 omni_attenuation = 0.8
+metadata/saved_energy = 0.55
 
 [node name="BulbLightNE" type="OmniLight3D" parent="Zal/ZalOsgonaChandelier" unique_id=876768674]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 213.355, 39.925, 213.355)
 light_color = Color(1, 0.84, 0.58, 1)
-light_energy = 0.55
+light_energy = 0.0
 omni_range = 1.6
 omni_attenuation = 0.8
+metadata/saved_energy = 0.55
 
 [node name="BulbLightNW" type="OmniLight3D" parent="Zal/ZalOsgonaChandelier" unique_id=1870245989]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -213.355, 39.925, 213.355)
 light_color = Color(1, 0.84, 0.58, 1)
-light_energy = 0.55
+light_energy = 0.0
 omni_range = 1.6
 omni_attenuation = 0.8
+metadata/saved_energy = 0.55
 
 [node name="BulbLightW" type="OmniLight3D" parent="Zal/ZalOsgonaChandelier" unique_id=218742998]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -301.729, 39.925, 0)
 light_color = Color(1, 0.84, 0.58, 1)
-light_energy = 0.55
+light_energy = 0.0
 omni_range = 1.6
 omni_attenuation = 0.8
+metadata/saved_energy = 0.55
 
 [node name="BulbLightSW" type="OmniLight3D" parent="Zal/ZalOsgonaChandelier" unique_id=108102933]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -213.355, 39.925, -213.355)
 light_color = Color(1, 0.84, 0.58, 1)
-light_energy = 0.55
+light_energy = 0.0
 omni_range = 1.6
 omni_attenuation = 0.8
+metadata/saved_energy = 0.55
 
 [node name="BulbLightSE" type="OmniLight3D" parent="Zal/ZalOsgonaChandelier" unique_id=1763617064]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 213.355, 39.925, -213.355)
 light_color = Color(1, 0.84, 0.58, 1)
-light_energy = 0.55
+light_energy = 0.0
 omni_range = 1.6
 omni_attenuation = 0.8
+metadata/saved_energy = 0.55
 
 [node name="BulbLightE" type="OmniLight3D" parent="Zal/ZalOsgonaChandelier" unique_id=989821913]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 301.729, 39.925, 0)
 light_color = Color(1, 0.84, 0.58, 1)
-light_energy = 0.55
+light_energy = 0.0
 omni_range = 1.6
 omni_attenuation = 0.8
+metadata/saved_energy = 0.55
 
 [node name="BulbLightS" type="OmniLight3D" parent="Zal/ZalOsgonaChandelier" unique_id=495019381]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 39.925, -301.729)
 light_color = Color(1, 0.84, 0.58, 1)
-light_energy = 0.55
+light_energy = 0.0
 omni_range = 1.6
 omni_attenuation = 0.8
+metadata/saved_energy = 0.55
 
 [node name="ZalPlant" parent="Zal" unique_id=860749382 instance=ExtResource("34_zalplant")]
 transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 4.35, 0.6288465, 7.03)
@@ -542,16 +550,18 @@ transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 4.35, 0.6288465, 7.0
 [node name="Warm1" type="OmniLight3D" parent="Zal/ZalLights" unique_id=659115941]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.45, 4.3933935)
 light_color = Color(1, 0.86, 0.66, 1)
-light_energy = 0.6
+light_energy = 0.0
 shadow_enabled = true
 omni_range = 7.0
+metadata/saved_energy = 0.6
 
 [node name="Warm2" type="OmniLight3D" parent="Zal/ZalLights" unique_id=683919040]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.45, 5.695622)
 light_color = Color(1, 0.86, 0.66, 1)
-light_energy = 0.6
+light_energy = 0.0
 shadow_enabled = true
 omni_range = 7.0
+metadata/saved_energy = 0.6
 
 [node name="WindowFill" type="OmniLight3D" parent="Zal/ZalLights" unique_id=1076088684]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1.6, 7.1)
