@@ -26,7 +26,14 @@ enum Kind { DOOR, LIGHT_SWITCH, PICKUP, COMPUTER, COMPUTER_POWER }
 
 @export_group("Light Switch")
 @export var target_light_path: NodePath      ## Light3D to toggle
+@export var target_light_paths: Array[NodePath] = []
 @export var default_light_energy: float = 2.0
+
+@export_group("Switch Visual")
+@export var switch_visual_path: NodePath
+@export var switch_on_rotation_degrees: Vector3 = Vector3.ZERO
+@export var switch_off_rotation_degrees: Vector3 = Vector3(12.0, 0.0, 0.0)
+@export var switch_visual_anim_time: float = 0.12
 
 @export_group("Computer")
 @export var target_terminal_path: NodePath   ## Node with open_terminal(player)
@@ -34,11 +41,14 @@ enum Kind { DOOR, LIGHT_SWITCH, PICKUP, COMPUTER, COMPUTER_POWER }
 # --- Internal state ----------------------------------------------------------
 var _door_open: bool = false
 var _door_tween: Tween
+var _switch_visual_tween: Tween
 var _saved_energy: float = 2.0
 
 
 func _ready() -> void:
 	_saved_energy = default_light_energy
+	if kind == Kind.LIGHT_SWITCH and not switch_visual_path.is_empty():
+		call_deferred("_sync_light_switch_visual")
 
 
 ## Called by the player controller when the object is activated.
@@ -73,32 +83,84 @@ func _toggle_door() -> void:
 func _toggle_light() -> void:
 	# Target may be a single Light3D OR a parent node holding several lights
 	# (e.g. the four chandelier bulbs) — collect and toggle them together.
-	var target := get_node_or_null(target_light_path)
-	if target == null:
-		push_warning("Interactable '%s': target_light_path is not set or not found." % name)
-		return
-	var lights: Array[Node] = []
-	if target is Light3D:
-		lights.append(target)
-	lights.append_array(target.find_children("*", "Light3D", true, false))
+	var lights := _collect_light_targets(true)
 	if lights.is_empty():
 		push_warning("Interactable '%s': target_light_path has no Light3D under it." % name)
 		return
 
 	# Lit if any light is currently on; flip them all to the opposite state.
-	var any_on := false
-	for l in lights:
-		if (l as Light3D).light_energy > 0.0:
-			any_on = true
-			break
-	for l in lights:
-		var light := l as Light3D
+	var any_on := _has_enabled_light(lights)
+	for light in lights:
 		if any_on:
 			# Remember each bulb's brightness so we can restore it exactly.
 			light.set_meta("saved_energy", light.light_energy if light.light_energy > 0.0 else default_light_energy)
 			light.light_energy = 0.0
 		else:
 			light.light_energy = float(light.get_meta("saved_energy", default_light_energy))
+	_set_light_switch_visual(not any_on, true)
+
+
+func _collect_light_targets(warn_missing: bool) -> Array[Light3D]:
+	var target_paths: Array[NodePath] = []
+	if not target_light_path.is_empty():
+		target_paths.append(target_light_path)
+	target_paths.append_array(target_light_paths)
+	if target_paths.is_empty():
+		if warn_missing:
+			push_warning("Interactable '%s': target_light_path is not set or not found." % name)
+		return []
+
+	var lights: Array[Light3D] = []
+	for path in target_paths:
+		var target := get_node_or_null(path)
+		if target == null:
+			if warn_missing:
+				push_warning("Interactable '%s': target_light_path is not set or not found: %s" % [name, path])
+			continue
+		if target is Light3D and not lights.has(target):
+			lights.append(target)
+		for child in target.find_children("*", "Light3D", true, false):
+			var light := child as Light3D
+			if light != null and not lights.has(light):
+				lights.append(light)
+	return lights
+
+
+func _has_enabled_light(lights: Array[Light3D]) -> bool:
+	for light in lights:
+		if light.light_energy > 0.0:
+			return true
+	return false
+
+
+func _sync_light_switch_visual() -> void:
+	var lights := _collect_light_targets(false)
+	if not lights.is_empty():
+		_set_light_switch_visual(_has_enabled_light(lights), false)
+
+
+func _set_light_switch_visual(is_on: bool, animate: bool) -> void:
+	if switch_visual_path.is_empty():
+		return
+	var visual := get_node_or_null(switch_visual_path) as Node3D
+	if visual == null:
+		push_warning("Interactable '%s': switch_visual_path is not set or not found." % name)
+		return
+
+	var target_rotation := switch_on_rotation_degrees if is_on else switch_off_rotation_degrees
+	if _switch_visual_tween != null and _switch_visual_tween.is_running():
+		_switch_visual_tween.kill()
+	if animate and is_inside_tree() and switch_visual_anim_time > 0.0:
+		# Tactile rocker "click": snap a touch past the target, then settle back.
+		var from_rotation := visual.rotation_degrees
+		var overshoot := target_rotation + (target_rotation - from_rotation) * 0.22
+		_switch_visual_tween = create_tween()
+		_switch_visual_tween.tween_property(visual, "rotation_degrees", overshoot, switch_visual_anim_time * 0.6) \
+			.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
+		_switch_visual_tween.tween_property(visual, "rotation_degrees", target_rotation, switch_visual_anim_time * 0.4) \
+			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	else:
+		visual.rotation_degrees = target_rotation
 
 
 # --- Pickup ------------------------------------------------------------------

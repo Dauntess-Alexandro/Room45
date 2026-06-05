@@ -19,6 +19,7 @@
 [ext_resource type="PackedScene" uid="uid://d0mdkx5sdkrle" path="res://models/radiator.glb" id="14_1u8w0"]
 [ext_resource type="PackedScene" uid="uid://de2mexy6ey4j" path="res://models/chandelier.glb" id="14_seu75"]
 [ext_resource type="PackedScene" uid="uid://cgu2bhwo0pcdn" path="res://models/curtains.glb" id="15_0odxb"]
+[ext_resource type="PackedScene" path="res://models/window_blinds_single.tscn" id="15_blinds"]
 [ext_resource type="Texture2D" uid="uid://6g1awfatymcc" path="res://decal_worldmap.png" id="15_htxhm"]
 [ext_resource type="AudioStream" uid="uid://8vyqn67xrp1h" path="res://sound/clock.mp3" id="17_clock"]
 [ext_resource type="PackedScene" uid="uid://dyqs67l4rms57" path="res://models/pillow.glb" id="18_0rl1p"]
@@ -30,6 +31,11 @@
 [ext_resource type="PackedScene" uid="uid://dsq13mmg2fn13" path="res://models/clock.glb" id="28_clock"]
 [ext_resource type="Script" uid="uid://bac255qhcv5c2" path="res://clock_hands.gd" id="29_clock_hands"]
 [ext_resource type="Script" uid="uid://y0an2o2bglv2" path="res://sun_controller.gd" id="30_sun"]
+[ext_resource type="Script" uid="uid://jfmp7r51wta6" path="res://living_room_part.gd" id="31_living_part"]
+[ext_resource type="PackedScene" uid="uid://bk5v1xr3b5yq5" path="res://models/carpet.glb" id="32_carpet"]
+[ext_resource type="PackedScene" uid="uid://r0bohlxpgd03" path="res://models/Osgona chandelier.glb" id="33_osgona"]
+[ext_resource type="PackedScene" uid="uid://c18wwdpmx3r0y" path="res://models/zal_plant.glb" id="34_zalplant"]
+[ext_resource type="PackedScene" uid="uid://pae8dsd7ms3j" path="res://models/light_switch.glb" id="35_lightswitch"]
 
 [sub_resource type="Environment" id="Env"]
 background_mode = 1
@@ -100,15 +106,6 @@ size = Vector3(3.87, 0.06, 0.06)
 
 [sub_resource type="BoxMesh" id="ZalWinMullionMesh"]
 size = Vector3(0.05, 1.28, 0.06)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1vm84"]
-transparency = 1
-albedo_color = Color(1, 1, 1, 0.55)
-albedo_texture = ExtResource("12_qsp4k")
-texture_filter = 1
-
-[sub_resource type="QuadMesh" id="ZalTulleMesh"]
-size = Vector2(4.9, 1.5)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lswn8"]
 albedo_texture = ExtResource("6_d13ii")
@@ -188,6 +185,12 @@ size = Vector3(0.05, 2.15, 0.06)
 [sub_resource type="BoxMesh" id="BoxMesh_rqtf5"]
 size = Vector3(0.8, 0.05, 0.06)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1vm84"]
+transparency = 1
+albedo_color = Color(1, 1, 1, 0.55)
+albedo_texture = ExtResource("12_qsp4k")
+texture_filter = 1
+
 [sub_resource type="QuadMesh" id="QuadMesh_wu3dr"]
 size = Vector2(1.5, 1.35)
 
@@ -230,6 +233,9 @@ size = Vector3(0.12, 0.18, 0.04)
 
 [sub_resource type="BoxShape3D" id="SwitchShape"]
 size = Vector3(0.12, 0.18, 0.04)
+
+[sub_resource type="BoxShape3D" id="ZalSwitchShape"]
+size = Vector3(0.26, 0.24, 0.12)
 
 [sub_resource type="ShaderMaterial" id="VHSMat"]
 shader = ExtResource("8_shader")
@@ -364,7 +370,7 @@ material = SubResource("WallMat")
 [node name="Balcony" type="Node3D" parent="Zal" unique_id=481150561]
 
 [node name="Daylight" type="MeshInstance3D" parent="Zal/Balcony" unique_id=334796450]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.275, 1.49, 7.58)
+transform = Transform3D(1.08, 0, 0, 0, 1.1, 0, 0, 0, 1, 1.2542648, 1.5038825, 7.588458)
 material_override = SubResource("StandardMaterial3D_e71vb")
 mesh = SubResource("ZalDaylightMesh")
 
@@ -374,7 +380,7 @@ material_override = SubResource("StandardMaterial3D_e71vb")
 mesh = SubResource("ZalDoorDaylightMesh")
 
 [node name="WinGlass" type="MeshInstance3D" parent="Zal/Balcony" unique_id=151951403]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.275, 1.49, 7.54)
+transform = Transform3D(1.03, 0, 0, 0, 1, 0, 0, 0, 1, 1.278284, 1.4853243, 7.5476255)
 material_override = SubResource("StandardMaterial3D_vke2r")
 mesh = SubResource("ZalGlassMesh")
 
@@ -426,24 +432,123 @@ mesh = SubResource("ZalWinMullionMesh")
 [node name="BalconyDoor" parent="Zal/Balcony" unique_id=460612286 instance=ExtResource("12_0odxb")]
 transform = Transform3D(-2.04228, 0, 0, 0, 2.04228, 0, 0, 0, -2.04228, 3.75, 1.0830773, 7.52)
 
-[node name="Tulle" type="MeshInstance3D" parent="Zal/Balcony" unique_id=686090520]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 2.1566975, 1.802178, 7.1937666)
-material_override = SubResource("StandardMaterial3D_1vm84")
-mesh = SubResource("ZalTulleMesh")
+[node name="WindowBlindLeft" parent="Zal/Balcony" unique_id=2066481930 instance=ExtResource("15_blinds")]
+transform = Transform3D(-2.1855694e-10, -2.2928226e-17, 0.006, -4.3711387e-10, 0.006, 0, 0.005, 5.2453664e-10, 2.6226832e-10, -0.021149397, 0.937, 7.535)
+
+[node name="WindowBlindCenter" parent="Zal/Balcony" unique_id=1128262550 instance=ExtResource("15_blinds")]
+transform = Transform3D(-2.1855694e-10, -2.2928226e-17, 0.006, -4.3711387e-10, 0.006, 0, 0.005, 5.2453664e-10, 2.6226832e-10, 1.2958893, 0.937, 7.535)
+
+[node name="WindowBlindRight" parent="Zal/Balcony" unique_id=286547600 instance=ExtResource("15_blinds")]
+transform = Transform3D(-4.3711387e-10, -3.9601417e-17, 0.006, -1.5099579e-09, 0.006, 0, 0.01, 9.0597485e-10, 2.6226832e-10, 2.6012647, 0.9372772, 7.535)
+
+[node name="LivingRoomArmchair" type="Node3D" parent="Zal" unique_id=1230269460]
+transform = Transform3D(0.7629279, 0, 0.64648366, 0, 1, 0, -0.64648366, 0, 0.7629279, -0.056707203, 0.022068262, 6.590718)
+script = ExtResource("31_living_part")
+source_names = PackedStringArray("Cube_012")
+part_origin = Vector3(-1.413052, -0.011846, -3.895016)
+
+[node name="LivingRoomWardrobe" type="Node3D" parent="Zal" unique_id=1163523331]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1696477, 0.017704606, 5.9843507)
+script = ExtResource("31_living_part")
+source_names = PackedStringArray("Cube_043")
+part_origin = Vector3(1.23192, 0.012294, -0.602055)
+
+[node name="LivingRoomTvStand" type="Node3D" parent="Zal" unique_id=1499614935]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.311292, 0.013716, 4.707167)
+script = ExtResource("31_living_part")
+source_names = PackedStringArray("SM_TV", "Cylinder_002", "Plane_003", "Cube_013", "Cube_010", "Cube_006", "BezierCurve_001", "BezierCurve")
+part_origin = Vector3(1.418684, 0.00187, -1.937616)
+
+[node name="LivingRoomShelf" type="Node3D" parent="Zal" unique_id=1740816288]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.141128, 0.046359207, 2.1645749)
+script = ExtResource("31_living_part")
+source_names = PackedStringArray("Cube_008")
+part_origin = Vector3(1.318401, 3.8e-05, -3.557133)
+
+[node name="LivingRoomSofa" type="Node3D" parent="Zal" unique_id=974516827]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.20267498, 0.016382512, 4.8566275)
+script = ExtResource("31_living_part")
+source_names = PackedStringArray("Plane_006", "Cube_042", "Cube_005")
+part_origin = Vector3(-1.56278, -0.001863, -1.856035)
+
+[node name="ZalCarpet" parent="Zal" unique_id=314810617 instance=ExtResource("32_carpet")]
+transform = Transform3D(0.55, 0, 0, 0, 0.55, 0, 0, 0, 0.55, 2, 0.006, 5.0687)
+
+[node name="ZalOsgonaChandelier" parent="Zal" unique_id=1498684792 instance=ExtResource("33_osgona")]
+transform = Transform3D(0.001, 0, 0, 0, 0.001, 0, 0, 0, 0.001, 2, 2.248, 5)
+
+[node name="BulbLightN" type="OmniLight3D" parent="Zal/ZalOsgonaChandelier" unique_id=154523643]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 39.925, 301.729)
+light_color = Color(1, 0.84, 0.58, 1)
+light_energy = 0.55
+omni_range = 1.6
+omni_attenuation = 0.8
+
+[node name="BulbLightNE" type="OmniLight3D" parent="Zal/ZalOsgonaChandelier" unique_id=876768674]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 213.355, 39.925, 213.355)
+light_color = Color(1, 0.84, 0.58, 1)
+light_energy = 0.55
+omni_range = 1.6
+omni_attenuation = 0.8
+
+[node name="BulbLightNW" type="OmniLight3D" parent="Zal/ZalOsgonaChandelier" unique_id=1870245989]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -213.355, 39.925, 213.355)
+light_color = Color(1, 0.84, 0.58, 1)
+light_energy = 0.55
+omni_range = 1.6
+omni_attenuation = 0.8
+
+[node name="BulbLightW" type="OmniLight3D" parent="Zal/ZalOsgonaChandelier" unique_id=218742998]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -301.729, 39.925, 0)
+light_color = Color(1, 0.84, 0.58, 1)
+light_energy = 0.55
+omni_range = 1.6
+omni_attenuation = 0.8
+
+[node name="BulbLightSW" type="OmniLight3D" parent="Zal/ZalOsgonaChandelier" unique_id=108102933]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -213.355, 39.925, -213.355)
+light_color = Color(1, 0.84, 0.58, 1)
+light_energy = 0.55
+omni_range = 1.6
+omni_attenuation = 0.8
+
+[node name="BulbLightSE" type="OmniLight3D" parent="Zal/ZalOsgonaChandelier" unique_id=1763617064]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 213.355, 39.925, -213.355)
+light_color = Color(1, 0.84, 0.58, 1)
+light_energy = 0.55
+omni_range = 1.6
+omni_attenuation = 0.8
+
+[node name="BulbLightE" type="OmniLight3D" parent="Zal/ZalOsgonaChandelier" unique_id=989821913]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 301.729, 39.925, 0)
+light_color = Color(1, 0.84, 0.58, 1)
+light_energy = 0.55
+omni_range = 1.6
+omni_attenuation = 0.8
+
+[node name="BulbLightS" type="OmniLight3D" parent="Zal/ZalOsgonaChandelier" unique_id=495019381]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 39.925, -301.729)
+light_color = Color(1, 0.84, 0.58, 1)
+light_energy = 0.55
+omni_range = 1.6
+omni_attenuation = 0.8
+
+[node name="ZalPlant" parent="Zal" unique_id=860749382 instance=ExtResource("34_zalplant")]
+transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 4.35, 0.6288465, 7.03)
 
 [node name="ZalLights" type="Node3D" parent="Zal" unique_id=1193453838]
 
 [node name="Warm1" type="OmniLight3D" parent="Zal/ZalLights" unique_id=659115941]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.45, 3.9)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.45, 4.3933935)
 light_color = Color(1, 0.86, 0.66, 1)
-light_energy = 1.1
+light_energy = 0.6
 shadow_enabled = true
 omni_range = 7.0
 
 [node name="Warm2" type="OmniLight3D" parent="Zal/ZalLights" unique_id=683919040]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.45, 6.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.45, 5.695622)
 light_color = Color(1, 0.86, 0.66, 1)
-light_energy = 1.1
+light_energy = 0.6
 shadow_enabled = true
 omni_range = 7.0
 
@@ -772,6 +877,21 @@ mesh = SubResource("SwitchMesh")
 
 [node name="Collision" type="CollisionShape3D" parent="Interactables/LightSwitch" unique_id=1942662771]
 shape = SubResource("SwitchShape")
+
+[node name="ZalLightSwitch" type="StaticBody3D" parent="Interactables" unique_id=790329340]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.05, 1.15, 2.406)
+script = ExtResource("2_inter")
+kind = 1
+prompt_text = "TOGGLE ZAL LIGHT"
+target_light_path = NodePath("../../Zal/ZalOsgonaChandelier")
+target_light_paths = Array[NodePath]([NodePath("../../Zal/ZalLights/Warm1"), NodePath("../../Zal/ZalLights/Warm2")])
+
+[node name="Model" parent="Interactables/ZalLightSwitch" unique_id=754310843 instance=ExtResource("35_lightswitch")]
+transform = Transform3D(0.0025, 0, 0, 0, 0.0025, 0, 0, 0, 0.0025, 0.0041999817, 0.039299965, -0.0056319237)
+
+[node name="Collision" type="CollisionShape3D" parent="Interactables/ZalLightSwitch" unique_id=1111684381]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0146, 0.106, 0.03)
+shape = SubResource("ZalSwitchShape")
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=2027038555]
 
