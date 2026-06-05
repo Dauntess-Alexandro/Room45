@@ -40,8 +40,9 @@ enum Kind { DOOR, LIGHT_SWITCH, PICKUP, COMPUTER, COMPUTER_POWER }
 @export var target_terminal_path: NodePath   ## Node with open_terminal(player)
 
 @export_group("Sound")
-@export var click_sound: AudioStream         ## Played on each switch toggle
-@export var click_player_path: NodePath      ## AudioStreamPlayer3D used to play it
+@export var click_sound: AudioStream          ## Played on each switch toggle (fallback)
+@export var click_sounds: Array[AudioStream] = []  ## If set, a random one plays each toggle
+@export var click_player_path: NodePath       ## AudioStreamPlayer3D used to play it
 
 # --- Internal state ----------------------------------------------------------
 var _door_open: bool = false
@@ -197,12 +198,15 @@ func _apply_switch_tilt(deg: float) -> void:
 
 
 func _play_click() -> void:
-	if click_sound == null:
+	var stream: AudioStream = click_sound
+	if not click_sounds.is_empty():
+		stream = click_sounds[randi() % click_sounds.size()]
+	if stream == null:
 		return
 	var player := get_node_or_null(click_player_path) as AudioStreamPlayer3D
 	if player == null:
 		return
-	player.stream = click_sound
+	player.stream = stream
 	player.play()
 
 

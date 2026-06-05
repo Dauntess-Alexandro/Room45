@@ -37,6 +37,14 @@
 [ext_resource type="PackedScene" uid="uid://c18wwdpmx3r0y" path="res://models/zal_plant.glb" id="34_zalplant"]
 [ext_resource type="PackedScene" uid="uid://csfvw54aowor4" path="res://models/light_switch_split.glb" id="35_lightswitch"]
 [ext_resource type="AudioStream" path="res://sound/switch_click.wav" id="36_click"]
+[ext_resource type="AudioStream" uid="uid://b281l7ohjim4w" path="res://sound/switch/click_1.wav" id="37_c1"]
+[ext_resource type="AudioStream" uid="uid://droxqsmggjxlv" path="res://sound/switch/click_2.wav" id="37_c2"]
+[ext_resource type="AudioStream" uid="uid://dc343jtibmmd1" path="res://sound/switch/click_3.wav" id="37_c3"]
+[ext_resource type="AudioStream" uid="uid://clipx4r0imv4g" path="res://sound/switch/click_4.wav" id="37_c4"]
+[ext_resource type="AudioStream" uid="uid://jxaeunhxkuxu" path="res://sound/switch/click_5.wav" id="37_c5"]
+[ext_resource type="AudioStream" uid="uid://djdd43qvbx6h6" path="res://sound/switch/click_6.wav" id="37_c6"]
+[ext_resource type="AudioStream" uid="uid://bn8qol1r61ra7" path="res://sound/switch/click_7.wav" id="37_c7"]
+[ext_resource type="AudioStream" uid="uid://bgqocpgof3uo0" path="res://sound/switch/click_8.wav" id="37_c8"]
 
 [sub_resource type="Environment" id="Env"]
 background_mode = 1
@@ -901,7 +909,7 @@ switch_tilt_axis = Vector3(1, 0, 0)
 switch_on_tilt_degrees = 7.0
 switch_off_tilt_degrees = -7.0
 switch_visual_anim_time = 0.09
-click_sound = ExtResource("36_click")
+click_sounds = Array[AudioStream]([ExtResource("37_c1"), ExtResource("37_c2"), ExtResource("37_c3"), ExtResource("37_c4"), ExtResource("37_c5"), ExtResource("37_c6"), ExtResource("37_c7"), ExtResource("37_c8")])
 click_player_path = NodePath("ClickSound")
 
 [node name="Model" parent="Interactables/ZalLightSwitch" unique_id=754310843 instance=ExtResource("35_lightswitch")]
