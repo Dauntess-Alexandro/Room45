@@ -37,6 +37,7 @@ extends RigidBody3D
 
 var _operating: bool = false
 var _hinge: HingeJoint3D
+var _excepted: PhysicsBody3D
 var _handle_node: Node3D
 var _handle_rest_basis: Basis
 var _handle_captured: bool = false
@@ -74,14 +75,20 @@ func get_prompt() -> String:
 	return prompt
 
 
-func grab_begin() -> void:
+func grab_begin(by: Node = null) -> void:
 	if _hinge == null:
 		return
 	# Decide direction once on press: if more than halfway closed, open; else close.
-	# +target_velocity drives toward the hinge's upper (open) limit, - toward closed.
+	# Open is the hinge's lower limit (into the room); -target_velocity drives there,
+	# +target_velocity drives back toward closed (0).
 	var open_rad := deg_to_rad(open_angle_degrees)
-	var dir := 1.0 if absf(rotation.y) < open_rad * 0.5 else -1.0
+	var dir := -1.0 if absf(rotation.y) < open_rad * 0.5 else 1.0
 	_operating = true
+	# While the player holds the door, don't let it collide with them (kills the
+	# jitter from the leaf swinging into the body); restored on release.
+	if by is PhysicsBody3D:
+		_excepted = by
+		add_collision_exception_with(by)
 	_hinge.set("motor/max_impulse", motor_max_impulse)
 	_hinge.set("motor/target_velocity", dir * open_speed)
 	_hinge.set("motor/enable", true)
@@ -92,6 +99,9 @@ func grab_end() -> void:
 	_operating = false
 	if _hinge != null:
 		_hinge.set("motor/enable", false)
+	if _excepted != null and is_instance_valid(_excepted):
+		remove_collision_exception_with(_excepted)
+	_excepted = null
 	_tween_handle(0.0)
 
 

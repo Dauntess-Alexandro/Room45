@@ -178,7 +178,7 @@ func _update_interaction() -> void:
 	if _current_target.has_method("is_grabbable") and _current_target.is_grabbable():
 		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 			_grabbed_door = _current_target
-			_grabbed_door.grab_begin()
+			_grabbed_door.grab_begin(self)
 	elif Input.is_action_just_pressed("interact"):
 		_current_target.interact(self)
 		# Pickups free themselves; drop the stale reference and hide the prompt.
