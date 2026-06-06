@@ -71,8 +71,9 @@ func get_prompt() -> String:
 
 func grab_begin() -> void:
 	# Decide direction once on press: if more than halfway closed, open; else close.
+	# Open is the positive angle (toward the room); closed is 0.
 	var open_rad := deg_to_rad(open_angle_degrees)
-	_operate_dir = -1.0 if rotation.y > -open_rad * 0.5 else 1.0
+	_operate_dir = 1.0 if rotation.y < open_rad * 0.5 else -1.0
 	_operating = true
 	_tween_handle(handle_press_degrees)
 
@@ -89,8 +90,8 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	var w := state.angular_velocity.y
 
 	if _operating:
-		var at_open := _operate_dir < 0.0 and ang <= -open_rad + limit_epsilon
-		var at_closed := _operate_dir > 0.0 and ang >= -limit_epsilon
+		var at_open := _operate_dir > 0.0 and ang >= open_rad - limit_epsilon
+		var at_closed := _operate_dir < 0.0 and ang <= limit_epsilon
 		if at_open or at_closed:
 			w = move_toward(w, 0.0, stop_decel * state.step)
 		else:
