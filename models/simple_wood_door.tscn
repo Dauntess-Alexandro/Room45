@@ -1,7 +1,9 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://interactable.gd" id="1_interactable"]
 [ext_resource type="PackedScene" path="res://models/simple_wood_door.glb" id="2_simpledoor"]
+[ext_resource type="Script" path="res://models/simple_wood_door_cleanup.gd" id="3_cleanup"]
+[ext_resource type="AudioStream" path="res://sound/woodendoor.mp3" id="4_wooddoor"]
 
 [sub_resource type="BoxShape3D" id="DoorLeafShape"]
 size = Vector3(0.92, 2.02, 0.18)
@@ -12,10 +14,20 @@ prompt_text = "OPEN DOOR"
 max_interact_distance = 2.2
 door_open_angle = 95.0
 door_anim_time = 0.65
+door_sound_player_path = NodePath("DoorSound")
+door_open_sound_duration = 1.05
+door_close_sound_start = 4.0
+door_close_sound_duration = 0.75
 
 [node name="Model" parent="." instance=ExtResource("2_simpledoor")]
 transform = Transform3D(1.025, 0, 0, 0, 1.025, 0, 0, 0, 1.025, 0, 0, 0)
+script = ExtResource("3_cleanup")
 
 [node name="Collision" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.452, 1.012, -0.017)
 shape = SubResource("DoorLeafShape")
+
+[node name="DoorSound" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("4_wooddoor")
+unit_size = 2.0
+max_distance = 8.0

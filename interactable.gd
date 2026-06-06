@@ -25,6 +25,11 @@ enum Kind { DOOR, LIGHT_SWITCH, PICKUP, COMPUTER, COMPUTER_POWER }
 @export_group("Door")
 @export var door_open_angle: float = 95.0   ## degrees
 @export var door_anim_time: float = 0.6      ## seconds
+@export var door_sound_player_path: NodePath ## AudioStreamPlayer3D used for door open/close sounds
+@export var door_open_sound_start: float = 0.0
+@export var door_open_sound_duration: float = 0.0
+@export var door_close_sound_start: float = 0.0
+@export var door_close_sound_duration: float = 0.0
 
 @export_group("Light Switch")
 @export var target_light_path: NodePath      ## Light3D to toggle
@@ -49,6 +54,7 @@ enum Kind { DOOR, LIGHT_SWITCH, PICKUP, COMPUTER, COMPUTER_POWER }
 # --- Internal state ----------------------------------------------------------
 var _door_open: bool = false
 var _door_tween: Tween
+var _door_sound_generation: int = 0
 var _switch_visual_tween: Tween
 var _saved_energy: float = 2.0
 var _switch_rest_basis: Basis
@@ -82,6 +88,7 @@ func interact(_by: Node = null) -> void:
 func _toggle_door() -> void:
 	_door_open = not _door_open
 	var target_rotation: float = deg_to_rad(door_open_angle) if _door_open else 0.0
+	_play_door_sound(_door_open)
 
 	# Restart any in-progress swing so rapid presses stay responsive.
 	if _door_tween != null and _door_tween.is_running():
@@ -89,6 +96,29 @@ func _toggle_door() -> void:
 
 	_door_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_door_tween.tween_property(self, "rotation:y", target_rotation, door_anim_time)
+
+
+func _play_door_sound(opening: bool) -> void:
+	if door_sound_player_path.is_empty():
+		return
+	var player := get_node_or_null(door_sound_player_path) as AudioStreamPlayer3D
+	if player == null or player.stream == null:
+		return
+	_door_sound_generation += 1
+	var generation := _door_sound_generation
+	var start_time := door_open_sound_start if opening else door_close_sound_start
+	var duration := door_open_sound_duration if opening else door_close_sound_duration
+	if player.playing:
+		player.stop()
+	player.play(maxf(start_time, 0.0))
+	if duration > 0.0:
+		var timer := get_tree().create_timer(duration)
+		timer.timeout.connect(_stop_door_sound.bind(player, generation))
+
+
+func _stop_door_sound(player: AudioStreamPlayer3D, generation: int) -> void:
+	if generation == _door_sound_generation and is_instance_valid(player):
+		player.stop()
 
 
 # --- Light switch ------------------------------------------------------------

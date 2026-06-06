@@ -229,9 +229,10 @@ def build_frame() -> MeshBuilder:
         b.add_box((inner_x + casing_w * 0.5, casing_top_bottom * 0.5, face_z), (casing_w, casing_top_bottom, 0.045), 1.35)
         b.add_box((0, casing_top_bottom + casing_top_h * 0.5, face_z), (casing_outer_w, casing_top_h, 0.045), 1.35)
 
-        # Shallow side stops only; no top stop, otherwise the header reads as steps.
-        b.add_box((-inner_x - 0.006, 1.020, face_z + side * 0.015), (0.024, 1.980, 0.026), 1.35)
-        b.add_box((inner_x + 0.006, 1.020, face_z + side * 0.015), (0.024, 1.980, 0.026), 1.35)
+        # Plain stops overlap the closed door edge and hide the side/top gaps.
+        b.add_box((-inner_x + 0.030, 1.020, face_z + side * 0.015), (0.065, 1.980, 0.026), 1.35)
+        b.add_box((inner_x - 0.030, 1.020, face_z + side * 0.015), (0.065, 1.980, 0.026), 1.35)
+        b.add_box((0, opening_h - 0.034, face_z + side * 0.015), (0.950, 0.068, 0.026), 1.35)
 
     return b
 
