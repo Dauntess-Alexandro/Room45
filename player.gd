@@ -50,6 +50,7 @@ var _pitch: float = 0.0
 var _is_crouching: bool = false
 var _current_target: Object = null
 var _grabbed_door: Node = null
+var _grab_button: int = 0
 
 
 func _ready() -> void:
@@ -133,7 +134,7 @@ func _update_interaction() -> void:
 	# the button is released, the door is gone, or we walk too far away.
 	if _grabbed_door != null:
 		var still_valid := is_instance_valid(_grabbed_door)
-		var holding := Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+		var holding := Input.is_mouse_button_pressed(_grab_button)
 		var too_far := still_valid and global_position.distance_to(
 			(_grabbed_door as Node3D).global_position) > grab_max_distance
 		if not holding or too_far or not still_valid:
@@ -174,11 +175,16 @@ func _update_interaction() -> void:
 	if _current_target == null:
 		return
 
-	# Grabbable door: hold left mouse to operate. Everything else: tap [E].
+	# Grabbable door: hold LMB to open, RMB to close. Everything else: tap [E].
 	if _current_target.has_method("is_grabbable") and _current_target.is_grabbable():
 		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+			_grab_button = MOUSE_BUTTON_LEFT
 			_grabbed_door = _current_target
-			_grabbed_door.grab_begin(self)
+			_grabbed_door.grab_begin(self, true)
+		elif Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
+			_grab_button = MOUSE_BUTTON_RIGHT
+			_grabbed_door = _current_target
+			_grabbed_door.grab_begin(self, false)
 	elif Input.is_action_just_pressed("interact"):
 		_current_target.interact(self)
 		# Pickups free themselves; drop the stale reference and hide the prompt.

@@ -8,13 +8,14 @@ extends RigidBody3D
 ## latch feedback; the player just calls grab_begin()/grab_end(). Values exported.
 
 @export_group("Grab")
-@export var prompt: String = "HOLD LMB TO OPEN DOOR"
+@export var prompt: String = "LMB OPEN / RMB CLOSE"
 @export var hinge_path: NodePath = NodePath("../Hinge")
 
 @export_group("Open / Close")
 @export var open_angle_degrees: float = 95.0  ## must match the hinge open limit
 @export var open_speed: float = 1.1           ## rad/s motor target — the slow, heavy travel
 @export var motor_max_impulse: float = 6.0    ## motor strength; lower = heavier / slower to start
+@export var limit_epsilon: float = 0.04       ## rad; stop pushing this close to a limit (no jitter)
 
 @export_group("Handle")
 @export var handle_node_hint: String = "Handles"
@@ -36,6 +37,7 @@ extends RigidBody3D
 @export var closed_angle_epsilon: float = 0.08 ## rad; how close to 0 counts as "closed"
 
 var _operating: bool = false
+var _operate_dir: float = 0.0   ## -1 = opening (toward lower limit), +1 = closing (toward 0)
 var _hinge: HingeJoint3D
 var _excepted: PhysicsBody3D
 var _handle_node: Node3D
@@ -75,22 +77,20 @@ func get_prompt() -> String:
 	return prompt
 
 
-func grab_begin(by: Node = null) -> void:
+## opening = true drives toward the open limit, false drives toward closed.
+func grab_begin(by: Node = null, opening: bool = true) -> void:
 	if _hinge == null:
 		return
-	# Decide direction once on press: if more than halfway closed, open; else close.
-	# Open is the hinge's lower limit (into the room); -target_velocity drives there,
-	# +target_velocity drives back toward closed (0).
-	var open_rad := deg_to_rad(open_angle_degrees)
-	var dir := -1.0 if absf(rotation.y) < open_rad * 0.5 else 1.0
+	# Open is the hinge's lower limit; -target_velocity drives there, + back to 0.
+	_operate_dir = -1.0 if opening else 1.0
 	_operating = true
-	# While the player holds the door, don't let it collide with them (kills the
-	# jitter from the leaf swinging into the body); restored on release.
-	if by is PhysicsBody3D:
+	# Once the player has grabbed the door, stop it colliding with them for good —
+	# re-enabling mid-overlap would punt the door (and the player) on release.
+	if by is PhysicsBody3D and _excepted == null:
 		_excepted = by
 		add_collision_exception_with(by)
 	_hinge.set("motor/max_impulse", motor_max_impulse)
-	_hinge.set("motor/target_velocity", dir * open_speed)
+	_hinge.set("motor/target_velocity", _operate_dir * open_speed)
 	_hinge.set("motor/enable", true)
 	_tween_handle(handle_press_degrees)
 
@@ -99,9 +99,6 @@ func grab_end() -> void:
 	_operating = false
 	if _hinge != null:
 		_hinge.set("motor/enable", false)
-	if _excepted != null and is_instance_valid(_excepted):
-		remove_collision_exception_with(_excepted)
-	_excepted = null
 	_tween_handle(0.0)
 
 
@@ -109,6 +106,15 @@ func grab_end() -> void:
 func _physics_process(delta: float) -> void:
 	if _slam_cooldown > 0.0:
 		_slam_cooldown -= delta
+
+	# Stop the motor pushing once we've reached the target end, so it doesn't
+	# grind and shake against the hard limit.
+	if _operating and _hinge != null:
+		var open_rad := deg_to_rad(open_angle_degrees)
+		var reached_open := _operate_dir < 0.0 and rotation.y <= -open_rad + limit_epsilon
+		var reached_closed := _operate_dir > 0.0 and rotation.y >= -limit_epsilon
+		if reached_open or reached_closed:
+			_hinge.set("motor/target_velocity", 0.0)
 
 	var speed := absf(angular_velocity.y)
 
