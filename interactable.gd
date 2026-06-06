@@ -23,6 +23,7 @@ enum Kind { DOOR, LIGHT_SWITCH, PICKUP, COMPUTER, COMPUTER_POWER }
 @export var max_interact_distance: float = 0.0
 
 @export_group("Door")
+@export var door_close_prompt: String = "CLOSE DOOR" ## prompt shown while the door is open (prompt_text is used while closed)
 @export var door_open_angle: float = 95.0   ## degrees
 @export var door_anim_time: float = 0.6      ## seconds
 @export var door_settle_degrees: float = 2.5 ## extra overshoot past the open angle, then ease back (0 = clean stop)
@@ -108,6 +109,15 @@ func _resolve_door_nodes() -> void:
 				_handle_rest_basis = _handle_node.transform.basis
 				_handle_rest_captured = true
 				break
+
+
+## Text the HUD should show for this object right now. Doors flip between the
+## open and close prompts based on their current state; everything else just
+## uses prompt_text.
+func get_prompt() -> String:
+	if kind == Kind.DOOR:
+		return door_close_prompt if _door_open else prompt_text
+	return prompt_text
 
 
 ## Called by the player controller when the object is activated.

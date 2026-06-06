@@ -144,8 +144,7 @@ func _update_interaction() -> void:
 	if target != _current_target:
 		_current_target = target
 		if target != null:
-			if prompt_label != null:
-				prompt_label.text = "[E]  " + str(target.prompt_text)
+			_refresh_prompt_text()
 			_set_prompt_visible(true)
 		else:
 			_set_prompt_visible(false)
@@ -157,6 +156,14 @@ func _update_interaction() -> void:
 		if not is_instance_valid(_current_target):
 			_current_target = null
 			_set_prompt_visible(false)
+		else:
+			# State may have changed (e.g. door open<->close) — refresh the label.
+			_refresh_prompt_text()
+
+
+func _refresh_prompt_text() -> void:
+	if prompt_label != null and _current_target is Interactable:
+		prompt_label.text = "[E]  " + (_current_target as Interactable).get_prompt()
 
 
 func _set_prompt_visible(value: bool) -> void:
