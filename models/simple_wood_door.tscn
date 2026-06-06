@@ -32,5 +32,6 @@ unit_size = 2.0
 max_distance = 8.0
 
 [node name="Hinge" type="HingeJoint3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0)
 node_a = NodePath("../DoorLeaf")
 node_b = NodePath("")
