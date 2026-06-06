@@ -15,7 +15,7 @@ extends RigidBody3D
 @export var open_angle_degrees: float = 95.0  ## must match the hinge open limit
 @export var open_speed: float = 1.1           ## rad/s motor target — the slow, heavy travel
 @export var motor_max_impulse: float = 6.0    ## motor strength; lower = heavier / slower to start
-@export var limit_epsilon: float = 0.04       ## rad; stop pushing this close to a limit (no jitter)
+@export var limit_epsilon: float = 0.02       ## rad; stop pushing this close to a limit (no jitter)
 
 @export_group("Handle")
 @export var handle_node_hint: String = "Handles"
@@ -80,6 +80,14 @@ func get_prompt() -> String:
 ## opening = true drives toward the open limit, false drives toward closed.
 func grab_begin(by: Node = null, opening: bool = true) -> void:
 	if _hinge == null:
+		return
+	# If the door is already at the end we'd drive toward, do nothing — re-pushing
+	# into a hard limit just bounces it back (looks like it starts closing).
+	var open_rad := deg_to_rad(open_angle_degrees)
+	var ang := absf(rotation.y)
+	if opening and ang >= open_rad - limit_epsilon:
+		return
+	if not opening and ang <= limit_epsilon:
 		return
 	# Open is the hinge's lower limit; -target_velocity drives there, + back to 0.
 	_operate_dir = -1.0 if opening else 1.0
