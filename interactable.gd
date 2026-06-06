@@ -25,11 +25,26 @@ enum Kind { DOOR, LIGHT_SWITCH, PICKUP, COMPUTER, COMPUTER_POWER }
 @export_group("Door")
 @export var door_open_angle: float = 95.0   ## degrees
 @export var door_anim_time: float = 0.6      ## seconds
+@export var door_settle_degrees: float = 2.5 ## extra overshoot past the open angle, then ease back (0 = clean stop)
 @export var door_sound_player_path: NodePath ## AudioStreamPlayer3D used for door open/close sounds
 @export var door_open_sound_start: float = 0.0
 @export var door_open_sound_duration: float = 0.0
 @export var door_close_sound_start: float = 0.0
 @export var door_close_sound_duration: float = 0.0
+## Creak modulation: while the leaf moves, DoorSound pitch/volume follow its speed.
+@export var creak_pitch_min: float = 0.85
+@export var creak_pitch_max: float = 1.10
+@export var creak_volume_min_db: float = -16.0
+@export var creak_volume_max_db: float = 0.0
+@export var creak_speed_for_max: float = 3.0 ## leaf angular speed (rad/s) mapped to the loudest/highest creak
+
+@export_group("Door Handle")
+## Name fragment used to find the lever node inside the door model (case-insensitive glob "*<hint>*").
+@export var handle_node_hint: String = "Handles"
+@export var handle_press_axis: Vector3 = Vector3(0, 0, 1) ## local axis the lever rotates about
+@export var handle_press_degrees: float = 35.0            ## how far the lever presses down
+@export var handle_press_time: float = 0.15              ## time to press down
+@export var handle_return_time: float = 0.28             ## time to spring back up
 
 @export_group("Light Switch")
 @export var target_light_path: NodePath      ## Light3D to toggle
@@ -55,6 +70,15 @@ enum Kind { DOOR, LIGHT_SWITCH, PICKUP, COMPUTER, COMPUTER_POWER }
 var _door_open: bool = false
 var _door_tween: Tween
 var _door_sound_generation: int = 0
+var _door_sound_player: AudioStreamPlayer3D
+var _door_sound_base_db: float = 0.0
+var _creak_active: bool = false
+var _prev_door_rot: float = 0.0
+var _handle_node: Node3D
+var _handle_rest_basis: Basis
+var _handle_rest_captured: bool = false
+var _handle_angle: float = 0.0
+var _handle_tween: Tween
 var _switch_visual_tween: Tween
 var _saved_energy: float = 2.0
 var _switch_rest_basis: Basis
@@ -67,6 +91,23 @@ func _ready() -> void:
 	if kind == Kind.LIGHT_SWITCH and not switch_visual_path.is_empty():
 		_capture_switch_rest()
 		call_deferred("_sync_light_switch_visual")
+	if kind == Kind.DOOR:
+		_resolve_door_nodes()
+	set_process(false)
+
+
+func _resolve_door_nodes() -> void:
+	if not door_sound_player_path.is_empty():
+		_door_sound_player = get_node_or_null(door_sound_player_path) as AudioStreamPlayer3D
+		if _door_sound_player != null:
+			_door_sound_base_db = _door_sound_player.volume_db
+	if handle_node_hint.strip_edges() != "":
+		for node in find_children("*%s*" % handle_node_hint, "Node3D", true, false):
+			_handle_node = node as Node3D
+			if _handle_node != null:
+				_handle_rest_basis = _handle_node.transform.basis
+				_handle_rest_captured = true
+				break
 
 
 ## Called by the player controller when the object is activated.
@@ -89,13 +130,77 @@ func _toggle_door() -> void:
 	_door_open = not _door_open
 	var target_rotation: float = deg_to_rad(door_open_angle) if _door_open else 0.0
 	_play_door_sound(_door_open)
+	_animate_handle()
 
 	# Restart any in-progress swing so rapid presses stay responsive.
 	if _door_tween != null and _door_tween.is_running():
 		_door_tween.kill()
 
-	_door_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	_door_tween.tween_property(self, "rotation:y", target_rotation, door_anim_time)
+	_door_tween = create_tween()
+	if _door_open and door_settle_degrees > 0.0:
+		# Heavy door: swing a touch past the open angle, then ease back to rest.
+		var overshoot := deg_to_rad(door_open_angle + door_settle_degrees)
+		_door_tween.tween_property(self, "rotation:y", overshoot, door_anim_time * 0.82) \
+			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		_door_tween.tween_property(self, "rotation:y", target_rotation, door_anim_time * 0.18) \
+			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	else:
+		_door_tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		_door_tween.tween_property(self, "rotation:y", target_rotation, door_anim_time)
+
+	# Drive the creak's pitch/volume from the leaf's speed while it moves.
+	if _door_sound_player != null:
+		_prev_door_rot = rotation.y
+		_creak_active = true
+		set_process(true)
+
+
+# Lever presses down, then springs back up while the leaf swings.
+func _animate_handle() -> void:
+	if _handle_node == null or not _handle_rest_captured:
+		return
+	if _handle_tween != null and _handle_tween.is_running():
+		_handle_tween.kill()
+	var start_deg := _handle_angle
+	_handle_tween = create_tween()
+	_handle_tween.tween_method(_apply_handle_angle, start_deg, handle_press_degrees, handle_press_time) \
+		.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
+	_handle_tween.tween_method(_apply_handle_angle, handle_press_degrees, 0.0, handle_return_time) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+func _apply_handle_angle(deg: float) -> void:
+	_handle_angle = deg
+	if _handle_node == null:
+		return
+	var axis := handle_press_axis.normalized()
+	if axis.is_zero_approx():
+		axis = Vector3(0, 0, 1)
+	_handle_node.transform.basis = _handle_rest_basis * Basis(axis, deg_to_rad(deg))
+
+
+func _process(delta: float) -> void:
+	if not _creak_active:
+		set_process(false)
+		return
+	# Angular speed of the leaf this frame (rad/s).
+	var speed := 0.0
+	if delta > 0.0:
+		speed = absf(rotation.y - _prev_door_rot) / delta
+	_prev_door_rot = rotation.y
+
+	if _door_sound_player != null:
+		var t := clampf(speed / maxf(creak_speed_for_max, 0.001), 0.0, 1.0)
+		_door_sound_player.pitch_scale = lerpf(creak_pitch_min, creak_pitch_max, t)
+		_door_sound_player.volume_db = lerpf(creak_volume_min_db, creak_volume_max_db, t)
+
+	# Stop once the swing tween has finished.
+	if _door_tween == null or not _door_tween.is_running():
+		_creak_active = false
+		if _door_sound_player != null:
+			_door_sound_player.pitch_scale = 1.0
+			_door_sound_player.volume_db = _door_sound_base_db
+		set_process(false)
 
 
 func _play_door_sound(opening: bool) -> void:
