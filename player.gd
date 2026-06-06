@@ -61,14 +61,11 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	# Mouse look — unless we are holding a door, in which case the mouse pushes it.
+	# Mouse look.
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		if _grabbed_door != null and is_instance_valid(_grabbed_door):
-			_grabbed_door.grab_drive(event.relative.x)
-		else:
-			rotate_y(-event.relative.x * mouse_sensitivity)
-			_pitch = clamp(_pitch - event.relative.y * mouse_sensitivity, min_pitch, max_pitch)
-			camera.rotation.x = _pitch
+		rotate_y(-event.relative.x * mouse_sensitivity)
+		_pitch = clamp(_pitch - event.relative.y * mouse_sensitivity, min_pitch, max_pitch)
+		camera.rotation.x = _pitch
 
 	# Re-capture the mouse after closing the pause menu (Esc is handled there).
 	if event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
@@ -132,11 +129,11 @@ func _update_crouch(delta: float) -> void:
 
 # --- Interaction -------------------------------------------------------------
 func _update_interaction() -> void:
-	# While holding a door, the mouse drives it (see _unhandled_input). Stay in
-	# grab mode until the key is released, the door is gone, or we walk too far.
+	# While operating a door (left mouse held), it swings itself. Keep going until
+	# the button is released, the door is gone, or we walk too far away.
 	if _grabbed_door != null:
 		var still_valid := is_instance_valid(_grabbed_door)
-		var holding := Input.is_action_pressed("interact")
+		var holding := Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
 		var too_far := still_valid and global_position.distance_to(
 			(_grabbed_door as Node3D).global_position) > grab_max_distance
 		if not holding or too_far or not still_valid:
@@ -177,9 +174,9 @@ func _update_interaction() -> void:
 	if _current_target == null:
 		return
 
-	# Grabbable door: hold to grab and push. Everything else: tap to interact.
+	# Grabbable door: hold left mouse to operate. Everything else: tap [E].
 	if _current_target.has_method("is_grabbable") and _current_target.is_grabbable():
-		if Input.is_action_pressed("interact"):
+		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 			_grabbed_door = _current_target
 			_grabbed_door.grab_begin()
 	elif Input.is_action_just_pressed("interact"):
@@ -194,8 +191,13 @@ func _update_interaction() -> void:
 
 
 func _refresh_prompt_text() -> void:
-	if prompt_label != null and _current_target != null and _current_target.has_method("get_prompt"):
+	if prompt_label == null or _current_target == null or not _current_target.has_method("get_prompt"):
+		return
+	# Tap interactables use the "[E]" key; grabbable doors carry their own key hint.
+	if _current_target is Interactable:
 		prompt_label.text = "[E]  " + _current_target.get_prompt()
+	else:
+		prompt_label.text = _current_target.get_prompt()
 
 
 func _set_prompt_visible(value: bool) -> void:
