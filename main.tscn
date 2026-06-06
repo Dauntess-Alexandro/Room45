@@ -45,6 +45,8 @@
 [ext_resource type="AudioStream" uid="uid://djdd43qvbx6h6" path="res://sound/switch/click_6.wav" id="37_c6"]
 [ext_resource type="AudioStream" uid="uid://bn8qol1r61ra7" path="res://sound/switch/click_7.wav" id="37_c7"]
 [ext_resource type="AudioStream" uid="uid://bgqocpgof3uo0" path="res://sound/switch/click_8.wav" id="37_c8"]
+[ext_resource type="PackedScene" path="res://models/door_frame_between_rooms.glb" id="38_doorframe"]
+[ext_resource type="PackedScene" path="res://models/simple_wood_door.tscn" id="39_simpledoor"]
 
 [sub_resource type="Environment" id="Env"]
 background_mode = 1
@@ -330,6 +332,12 @@ material = SubResource("WallMat")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 1.025, 2.35)
 operation = 2
 size = Vector3(0.95, 2.05, 0.4)
+
+[node name="DoorFrameBetweenRooms" parent="Zal" instance=ExtResource("38_doorframe")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 0, 2.35)
+
+[node name="SimpleWoodDoor" parent="Zal" instance=ExtResource("39_simpledoor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.86, 0, 2.35)
 
 [node name="WallEast" type="CSGCombiner3D" parent="Zal" unique_id=990814887]
 use_collision = true

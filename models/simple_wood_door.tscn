@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://interactable.gd" id="1_interactable"]
+[ext_resource type="PackedScene" path="res://models/simple_wood_door.glb" id="2_simpledoor"]
+
+[sub_resource type="BoxShape3D" id="DoorLeafShape"]
+size = Vector3(0.92, 2.02, 0.18)
+
+[node name="SimpleWoodDoor" type="StaticBody3D"]
+script = ExtResource("1_interactable")
+prompt_text = "OPEN DOOR"
+max_interact_distance = 2.2
+door_open_angle = 95.0
+door_anim_time = 0.65
+
+[node name="Model" parent="." instance=ExtResource("2_simpledoor")]
+transform = Transform3D(1.025, 0, 0, 0, 1.025, 0, 0, 0, 1.025, 0, 0, 0)
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.452, 1.012, -0.017)
+shape = SubResource("DoorLeafShape")
