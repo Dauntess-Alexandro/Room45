@@ -2,19 +2,19 @@ class_name PhysicsDoor
 extends RigidBody3D
 ## A door you operate by holding a button: while held, the leaf swings slowly and
 ## heavily toward open (or toward closed if it is already open); release and it
-## stops where it is. The leaf hangs on a HingeJoint3D defined in the scene. This
-## script owns the motion, handle-press, creak, and slam feedback; the player just
-## calls grab_begin()/grab_end(). All feel values are exported for tuning.
+## settles where it is. The leaf hangs on a HingeJoint3D defined in the scene and
+## is driven by that joint's built-in motor (works in the joint's own frame, so no
+## world-axis sign guesswork). This script owns direction, handle-press, creak, and
+## latch feedback; the player just calls grab_begin()/grab_end(). Values exported.
 
 @export_group("Grab")
 @export var prompt: String = "HOLD LMB TO OPEN DOOR"
+@export var hinge_path: NodePath = NodePath("../Hinge")
 
 @export_group("Open / Close")
 @export var open_angle_degrees: float = 95.0  ## must match the hinge open limit
-@export var open_speed: float = 1.1           ## rad/s while held — the slow, heavy travel
-@export var open_accel: float = 2.0           ## rad/s^2 ramp-up (lower = heavier start)
-@export var stop_decel: float = 6.0           ## rad/s^2 settle rate when released
-@export var limit_epsilon: float = 0.03       ## rad; stop driving this close to a limit
+@export var open_speed: float = 1.1           ## rad/s motor target — the slow, heavy travel
+@export var motor_max_impulse: float = 6.0    ## motor strength; lower = heavier / slower to start
 
 @export_group("Handle")
 @export var handle_node_hint: String = "Handles"
@@ -32,11 +32,11 @@ extends RigidBody3D
 @export var creak_speed_for_max: float = 1.5  ## leaf speed (rad/s) mapped to loudest/highest
 @export var creak_idle_speed: float = 0.08    ## below this the creak stops
 @export var slam_clip_start: float = 4.0      ## seconds into the clip for the close/latch
-@export var slam_speed_threshold: float = 0.8 ## leaf speed (rad/s) into the closed stop = latch
-@export var closed_angle_epsilon: float = 0.07 ## rad; how close to 0 counts as "closed"
+@export var slam_speed_threshold: float = 0.6 ## leaf speed (rad/s) into the closed stop = latch
+@export var closed_angle_epsilon: float = 0.08 ## rad; how close to 0 counts as "closed"
 
 var _operating: bool = false
-var _operate_dir: float = 0.0   ## -1 = opening (toward negative angle), +1 = closing
+var _hinge: HingeJoint3D
 var _handle_node: Node3D
 var _handle_rest_basis: Basis
 var _handle_captured: bool = false
@@ -48,6 +48,11 @@ var _slam_cooldown: float = 0.0
 
 
 func _ready() -> void:
+	_hinge = get_node_or_null(hinge_path) as HingeJoint3D
+	if _hinge != null:
+		_hinge.set("motor/target_velocity", 0.0)
+		_hinge.set("motor/max_impulse", motor_max_impulse)
+		_hinge.set("motor/enable", false)
 	_sound = get_node_or_null(sound_player_path) as AudioStreamPlayer3D
 	if _sound != null:
 		_sound_base_db = _sound.volume_db
@@ -70,46 +75,35 @@ func get_prompt() -> String:
 
 
 func grab_begin() -> void:
+	if _hinge == null:
+		return
 	# Decide direction once on press: if more than halfway closed, open; else close.
-	# Open is the positive angle (toward the room); closed is 0.
+	# +target_velocity drives toward the hinge's upper (open) limit, - toward closed.
 	var open_rad := deg_to_rad(open_angle_degrees)
-	_operate_dir = 1.0 if rotation.y < open_rad * 0.5 else -1.0
+	var dir := 1.0 if absf(rotation.y) < open_rad * 0.5 else -1.0
 	_operating = true
+	_hinge.set("motor/max_impulse", motor_max_impulse)
+	_hinge.set("motor/target_velocity", dir * open_speed)
+	_hinge.set("motor/enable", true)
 	_tween_handle(handle_press_degrees)
 
 
 func grab_end() -> void:
 	_operating = false
+	if _hinge != null:
+		_hinge.set("motor/enable", false)
 	_tween_handle(0.0)
 
 
-# --- Motion (velocity-controlled so it stays slow and stable on the hinge) ----
-func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
-	var open_rad := deg_to_rad(open_angle_degrees)
-	var ang := rotation.y
-	var w := state.angular_velocity.y
-
-	if _operating:
-		var at_open := _operate_dir > 0.0 and ang >= open_rad - limit_epsilon
-		var at_closed := _operate_dir < 0.0 and ang <= limit_epsilon
-		if at_open or at_closed:
-			w = move_toward(w, 0.0, stop_decel * state.step)
-		else:
-			w = move_toward(w, _operate_dir * open_speed, open_accel * state.step)
-	else:
-		w = move_toward(w, 0.0, stop_decel * state.step)
-
-	state.angular_velocity = Vector3(0.0, w, 0.0)
-	_update_sound(absf(w), ang, state.step)
-
-
 # --- Creak + latch -----------------------------------------------------------
-func _update_sound(speed: float, ang: float, step: float) -> void:
+func _physics_process(delta: float) -> void:
 	if _slam_cooldown > 0.0:
-		_slam_cooldown -= step
+		_slam_cooldown -= delta
+
+	var speed := absf(angular_velocity.y)
 
 	# Latch click when arriving at the closed stop with some speed.
-	if absf(ang) < closed_angle_epsilon and speed > slam_speed_threshold and _slam_cooldown <= 0.0:
+	if absf(rotation.y) < closed_angle_epsilon and speed > slam_speed_threshold and _slam_cooldown <= 0.0:
 		_play_slam()
 		return
 
