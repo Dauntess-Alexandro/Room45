@@ -45,8 +45,6 @@
 [ext_resource type="AudioStream" uid="uid://djdd43qvbx6h6" path="res://sound/switch/click_6.wav" id="37_c6"]
 [ext_resource type="AudioStream" uid="uid://bn8qol1r61ra7" path="res://sound/switch/click_7.wav" id="37_c7"]
 [ext_resource type="AudioStream" uid="uid://bgqocpgof3uo0" path="res://sound/switch/click_8.wav" id="37_c8"]
-[ext_resource type="PackedScene" uid="uid://bsojvuokkakxs" path="res://models/soviet_door_leaf.glb" id="38_leaf"]
-[ext_resource type="PackedScene" uid="uid://ddsuryyh2hqw8" path="res://models/soviet_door_frame.glb" id="39_frame"]
 
 [sub_resource type="Environment" id="Env"]
 background_mode = 1
@@ -247,17 +245,6 @@ size = Vector3(0.12, 0.18, 0.04)
 
 [sub_resource type="BoxShape3D" id="ZalSwitchShape"]
 size = Vector3(0.26, 0.24, 0.12)
-
-[sub_resource type="BoxShape3D" id="RoomDoorShape"]
-size = Vector3(0.92, 2, 0.08)
-
-[sub_resource type="BoxMesh" id="DoorCapMesh"]
-size = Vector3(0.83, 0.03, 0.14)
-
-[sub_resource type="StandardMaterial3D" id="DoorCapMat"]
-albedo_color = Color(0.82, 0.83, 0.85, 1)
-roughness = 0.65
-texture_filter = 1
 
 [sub_resource type="ShaderMaterial" id="VHSMat"]
 shader = ExtResource("8_shader")
@@ -935,27 +922,6 @@ volume_db = -24.8
 [node name="Collision" type="CollisionShape3D" parent="Interactables/ZalLightSwitch" unique_id=1111684381]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0146, 0.106, 0.03)
 shape = SubResource("ZalSwitchShape")
-
-[node name="RoomDoor" type="StaticBody3D" parent="Interactables" unique_id=394538288]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.055, 0, 2.35)
-script = ExtResource("2_inter")
-prompt_text = "OPEN DOOR"
-door_open_angle = -95.0
-
-[node name="Leaf" parent="Interactables/RoomDoor" instance=ExtResource("38_leaf")]
-transform = Transform3D(0, 0, 0.001, 0, 0.00103, 0, -0.001, 0, 0, 0.479, 0, 0.018)
-
-[node name="TopCap" type="MeshInstance3D" parent="Interactables/RoomDoor"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.475, 2.0, 0.04)
-mesh = SubResource("DoorCapMesh")
-material_override = SubResource("DoorCapMat")
-
-[node name="Collision" type="CollisionShape3D" parent="Interactables/RoomDoor" unique_id=327331816]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.475, 1, 0)
-shape = SubResource("RoomDoorShape")
-
-[node name="DoorFrame" parent="Interactables" instance=ExtResource("39_frame")]
-transform = Transform3D(0, 0, 0.001, 0, 0.001, 0, -0.001, 0, 0, 0.424, 0, 2.368)
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=2027038555]
 
