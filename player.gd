@@ -17,6 +17,7 @@ extends CharacterBody3D
 @export var crouch_speed: float = 1.5
 @export var jump_velocity: float = 4.2
 @export var acceleration: float = 12.0   ## How snappily we reach target speed.
+@export var grab_max_distance: float = 2.5  ## how far the player can be and still hold a physics door
 
 # --- Crouch tuning -----------------------------------------------------------
 @export_group("Crouch")
@@ -48,6 +49,7 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _pitch: float = 0.0
 var _is_crouching: bool = false
 var _current_target: Object = null
+var _grabbed_door: Node = null
 
 
 func _ready() -> void:
@@ -59,11 +61,14 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	# Mouse look.
+	# Mouse look — unless we are holding a door, in which case the mouse pushes it.
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		rotate_y(-event.relative.x * mouse_sensitivity)
-		_pitch = clamp(_pitch - event.relative.y * mouse_sensitivity, min_pitch, max_pitch)
-		camera.rotation.x = _pitch
+		if _grabbed_door != null and is_instance_valid(_grabbed_door):
+			_grabbed_door.grab_drive(event.relative.x)
+		else:
+			rotate_y(-event.relative.x * mouse_sensitivity)
+			_pitch = clamp(_pitch - event.relative.y * mouse_sensitivity, min_pitch, max_pitch)
+			camera.rotation.x = _pitch
 
 	# Re-capture the mouse after closing the pause menu (Esc is handled there).
 	if event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
@@ -127,6 +132,22 @@ func _update_crouch(delta: float) -> void:
 
 # --- Interaction -------------------------------------------------------------
 func _update_interaction() -> void:
+	# While holding a door, the mouse drives it (see _unhandled_input). Stay in
+	# grab mode until the key is released, the door is gone, or we walk too far.
+	if _grabbed_door != null:
+		var still_valid := is_instance_valid(_grabbed_door)
+		var holding := Input.is_action_pressed("interact")
+		var too_far := still_valid and global_position.distance_to(
+			(_grabbed_door as Node3D).global_position) > grab_max_distance
+		if not holding or too_far or not still_valid:
+			if still_valid:
+				_grabbed_door.grab_end()
+			_grabbed_door = null
+			_current_target = null
+			_set_prompt_visible(false)
+		return
+
+	# Find what we are aiming at.
 	var target: Object = null
 	if interaction_ray.is_colliding():
 		var collider := interaction_ray.get_collider()
@@ -139,6 +160,10 @@ func _update_interaction() -> void:
 				var dist := interaction_ray.global_position.distance_to(interaction_ray.get_collision_point())
 				if dist > max_dist:
 					target = null
+		elif collider != null and collider.has_method("is_grabbable") and collider.is_grabbable():
+			var gdist := interaction_ray.global_position.distance_to(interaction_ray.get_collision_point())
+			if gdist <= grab_max_distance:
+				target = collider
 
 	# Update the on-screen prompt only when the target changes.
 	if target != _current_target:
@@ -149,8 +174,15 @@ func _update_interaction() -> void:
 		else:
 			_set_prompt_visible(false)
 
-	# Trigger the interaction.
-	if _current_target != null and Input.is_action_just_pressed("interact"):
+	if _current_target == null:
+		return
+
+	# Grabbable door: hold to grab and push. Everything else: tap to interact.
+	if _current_target.has_method("is_grabbable") and _current_target.is_grabbable():
+		if Input.is_action_pressed("interact"):
+			_grabbed_door = _current_target
+			_grabbed_door.grab_begin()
+	elif Input.is_action_just_pressed("interact"):
 		_current_target.interact(self)
 		# Pickups free themselves; drop the stale reference and hide the prompt.
 		if not is_instance_valid(_current_target):
@@ -162,8 +194,8 @@ func _update_interaction() -> void:
 
 
 func _refresh_prompt_text() -> void:
-	if prompt_label != null and _current_target is Interactable:
-		prompt_label.text = "[E]  " + (_current_target as Interactable).get_prompt()
+	if prompt_label != null and _current_target != null and _current_target.has_method("get_prompt"):
+		prompt_label.text = "[E]  " + _current_target.get_prompt()
 
 
 func _set_prompt_visible(value: bool) -> void:

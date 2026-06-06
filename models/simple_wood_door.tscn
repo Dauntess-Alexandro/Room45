@@ -1,36 +1,36 @@
 [gd_scene load_steps=6 format=3]
 
-[ext_resource type="Script" path="res://interactable.gd" id="1_interactable"]
-[ext_resource type="PackedScene" path="res://models/simple_wood_door.glb" id="2_simpledoor"]
-[ext_resource type="Script" path="res://models/simple_wood_door_cleanup.gd" id="3_cleanup"]
-[ext_resource type="AudioStream" path="res://sound/woodendoor.mp3" id="4_wooddoor"]
+[ext_resource type="PackedScene" path="res://models/simple_wood_door.glb" id="1_glb"]
+[ext_resource type="Script" path="res://models/simple_wood_door_cleanup.gd" id="2_cleanup"]
+[ext_resource type="Script" path="res://physics_door.gd" id="3_physics"]
+[ext_resource type="AudioStream" path="res://sound/woodendoor.mp3" id="4_sound"]
 
 [sub_resource type="BoxShape3D" id="DoorLeafShape"]
 size = Vector3(0.92, 2.02, 0.18)
 
-[node name="SimpleWoodDoor" type="StaticBody3D"]
-script = ExtResource("1_interactable")
-prompt_text = "OPEN DOOR"
-max_interact_distance = 2.2
-door_open_angle = 95.0
-door_anim_time = 0.65
-handle_press_degrees = -35.0
-handle_press_time = 0.43
-handle_return_time = 0.67
-door_sound_player_path = NodePath("DoorSound")
-door_open_sound_duration = 1.05
-door_close_sound_start = 4.0
-door_close_sound_duration = 0.75
+[node name="SimpleWoodDoor" type="Node3D"]
 
-[node name="Model" parent="." instance=ExtResource("2_simpledoor")]
+[node name="DoorLeaf" type="RigidBody3D" parent="."]
+script = ExtResource("3_physics")
+mass = 18.0
+gravity_scale = 0.0
+angular_damp = 2.5
+continuous_cd = true
+can_sleep = false
+
+[node name="Model" parent="DoorLeaf" instance=ExtResource("1_glb")]
 transform = Transform3D(1.025, 0, 0, 0, 1.025, 0, 0, 0, 1.025, 0, 0, 0)
-script = ExtResource("3_cleanup")
+script = ExtResource("2_cleanup")
 
-[node name="Collision" type="CollisionShape3D" parent="."]
+[node name="Collision" type="CollisionShape3D" parent="DoorLeaf"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.452, 1.012, -0.017)
 shape = SubResource("DoorLeafShape")
 
-[node name="DoorSound" type="AudioStreamPlayer3D" parent="."]
-stream = ExtResource("4_wooddoor")
+[node name="DoorSound" type="AudioStreamPlayer3D" parent="DoorLeaf"]
+stream = ExtResource("4_sound")
 unit_size = 2.0
 max_distance = 8.0
+
+[node name="Hinge" type="HingeJoint3D" parent="."]
+node_a = NodePath("../DoorLeaf")
+node_b = NodePath("")
