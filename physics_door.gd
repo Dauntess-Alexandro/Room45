@@ -114,7 +114,7 @@ func _physics_process(delta: float) -> void:
 		var reached_open := _operate_dir < 0.0 and rotation.y <= -open_rad + limit_epsilon
 		var reached_closed := _operate_dir > 0.0 and rotation.y >= -limit_epsilon
 		if reached_open or reached_closed:
-			_hinge.set("motor/target_velocity", 0.0)
+			_hinge.set("motor/enable", false)
 
 	var speed := absf(angular_velocity.y)
 

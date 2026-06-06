@@ -12,10 +12,10 @@ size = Vector3(0.92, 2.02, 0.18)
 
 [node name="DoorLeaf" type="RigidBody3D" parent="."]
 script = ExtResource("3_physics")
+collision_mask = 0
 mass = 18.0
 gravity_scale = 0.0
 angular_damp = 2.5
-continuous_cd = true
 can_sleep = false
 
 [node name="Model" parent="DoorLeaf" instance=ExtResource("1_glb")]
