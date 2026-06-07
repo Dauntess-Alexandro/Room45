@@ -14,7 +14,13 @@ extends DirectionalLight3D
 @export var max_window_energy := 1.15
 @export var max_beam_energy := 2.1
 
+@export var moon_light_path: NodePath
+@export var max_moon_energy := 0.18
+@export var moon_color := Color(0.6, 0.7, 1.0, 1.0)
+
 var _environment: Environment
+var _sky_material: ShaderMaterial
+var _moon: DirectionalLight3D
 var _window_lights: Array[OmniLight3D] = []
 var _window_beam: SpotLight3D
 var _daylight_mats: Array[StandardMaterial3D] = []
@@ -35,6 +41,9 @@ func _resolve_targets() -> void:
 	var world := get_node_or_null(world_environment_path) as WorldEnvironment
 	if world != null:
 		_environment = world.environment
+	if _environment != null and _environment.sky != null:
+		_sky_material = _environment.sky.sky_material as ShaderMaterial
+	_moon = get_node_or_null(moon_light_path) as DirectionalLight3D
 
 	_resolve_window_lights()
 	_resolve_extra_window_lights()
@@ -96,6 +105,23 @@ func _apply_time_of_day() -> void:
 	light_energy = max_sun_energy * pow(maxf(height, 0.0), 0.72)
 	shadow_enabled = daylight > 0.02
 
+	if _sky_material != null:
+		_sky_material.set_shader_parameter("sun_dir", -ray_dir)
+		_sky_material.set_shader_parameter("daylight", daylight)
+
+	# Moon: rises at nightfall, sweeps the opposite side, sets by sunrise.
+	var night_amt := 1.0 - daylight
+	var moon_t := _moon_progress(hour)
+	var moon_height := sin(moon_t * PI)
+	var toward_moon := Vector3(lerpf(-0.7, 0.7, moon_t), maxf(moon_height, 0.05) * 1.4, -1.0).normalized()
+	if _sky_material != null:
+		_sky_material.set_shader_parameter("moon_dir", toward_moon)
+	if _moon != null:
+		_moon.light_color = moon_color
+		_moon.light_energy = max_moon_energy * night_amt * clampf(moon_height + 0.15, 0.0, 1.0)
+		_moon.shadow_enabled = _moon.light_energy > 0.02
+		_moon.look_at(_moon.global_position - toward_moon, Vector3.UP)
+
 	if not _window_lights.is_empty():
 		var fill_color := _ambient_window_color(daylight, color)
 		var fill_energy := lerpf(0.03, max_window_energy, daylight * (0.24 + height * 0.46))
@@ -132,6 +158,15 @@ func _resolve_window_lights() -> void:
 		_window_lights.append(target)
 	for child in target.find_children("*", "OmniLight3D", true, false):
 		_window_lights.append(child as OmniLight3D)
+
+
+func _moon_progress(hour: float) -> float:
+	# 0 at nightfall, 1 by sunrise — a single sweep across the night.
+	var span := (24.0 - night_hour) + sunrise_hour
+	if span <= 0.001:
+		return 0.0
+	var into := (hour - night_hour) if hour >= night_hour else ((24.0 - night_hour) + hour)
+	return clampf(into / span, 0.0, 1.0)
 
 
 func _game_hour() -> float:

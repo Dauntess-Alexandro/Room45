@@ -47,10 +47,17 @@
 [ext_resource type="AudioStream" uid="uid://bgqocpgof3uo0" path="res://sound/switch/click_8.wav" id="37_c8"]
 [ext_resource type="PackedScene" uid="uid://c3a8hgy1hrcjb" path="res://models/door_frame_between_rooms.glb" id="38_doorframe"]
 [ext_resource type="PackedScene" path="res://models/simple_wood_door.tscn" id="39_simpledoor"]
+[ext_resource type="Shader" path="res://sky.gdshader" id="40_sky"]
+
+[sub_resource type="ShaderMaterial" id="SkyMat"]
+shader = ExtResource("40_sky")
+
+[sub_resource type="Sky" id="SkyRes"]
+sky_material = SubResource("SkyMat")
 
 [sub_resource type="Environment" id="Env"]
-background_mode = 1
-background_color = Color(0.02, 0.02, 0.03, 1)
+background_mode = 2
+sky = SubResource("SkyRes")
 ambient_light_color = Color(0.28, 0.29, 0.32, 1)
 ambient_light_sky_contribution = 0.0
 ambient_light_energy = 0.45
@@ -656,6 +663,7 @@ window_light_path = NodePath("../WindowLight")
 window_beam_path = NodePath("../WindowSunBeam")
 daylight_mesh_path = NodePath("../Furniture/Balcony/Daylight")
 extra_window_light_paths = Array[NodePath]([NodePath("../Zal/ZalLights/WindowFill")])
+moon_light_path = NodePath("../Moon")
 
 [node name="WindowSunBeam" type="SpotLight3D" parent="." unique_id=2036001154]
 transform = Transform3D(1, 0, 0, 0, 0.81915206, -0.57357645, 0, 0.57357645, 0.81915206, 0, 1.7, -1.98)
@@ -665,6 +673,12 @@ shadow_enabled = true
 spot_range = 5.2
 spot_angle = 58.0
 spot_angle_attenuation = 0.22
+
+[node name="Moon" type="DirectionalLight3D" parent="." unique_id=1753937623]
+transform = Transform3D(1, 0, 0, 0, 0.6428, -0.766, 0, 0.766, 0.6428, 0, 3, 0)
+light_color = Color(0.6, 0.7, 1, 1)
+light_energy = 0.0
+shadow_enabled = true
 
 [node name="Player" parent="." unique_id=821891331 instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 1.8)
