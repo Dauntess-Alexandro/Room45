@@ -15,7 +15,7 @@ extends RigidBody3D
 @export var open_angle_degrees: float = 95.0  ## must match the hinge open limit
 @export var open_speed: float = 1.1           ## rad/s motor target — the slow, heavy travel
 @export var motor_max_impulse: float = 6.0    ## motor strength; lower = heavier / slower to start
-@export var limit_epsilon: float = 0.02       ## rad; stop pushing this close to a limit (no jitter)
+@export var limit_epsilon: float = 0.01       ## rad; stop this short of the hard limit (no bounce)
 @export var approach_zone: float = 0.45       ## rad before a limit where the motor eases off (no bounce)
 
 @export_group("Handle")
@@ -111,30 +111,32 @@ func grab_end() -> void:
 	_tween_handle(0.0)
 
 
-# --- Creak + latch -----------------------------------------------------------
+# --- Motion end + creak ------------------------------------------------------
 func _physics_process(delta: float) -> void:
 	if _slam_cooldown > 0.0:
 		_slam_cooldown -= delta
 
-	# Ease the motor down as the leaf nears its target end, so it arrives gently
-	# instead of slamming the hard limit and bouncing back. Same for both ways.
 	if _operating and _hinge != null:
 		var open_rad := deg_to_rad(open_angle_degrees)
 		var target_ang := -open_rad if _operate_dir < 0.0 else 0.0
 		var remaining := absf(target_ang - rotation.y)
 		if remaining <= limit_epsilon:
+			# Stop JUST short of the hard limit and kill the momentum, so the leaf
+			# never touches the springy joint stop — nothing to bounce off.
+			angular_velocity = Vector3.ZERO
 			_hinge.set("motor/enable", false)
+			if _operate_dir > 0.0:
+				_play_slam()   # latch click on a full close
+			_operating = false
 		else:
+			# Ease the motor down near the end so it arrives gently. Same both ways.
 			var speed_scale := clampf(remaining / approach_zone, 0.18, 1.0)
 			_hinge.set("motor/target_velocity", _operate_dir * open_speed * speed_scale)
 
-	var speed := absf(angular_velocity.y)
+	_update_creak(absf(angular_velocity.y))
 
-	# Latch click when arriving at the closed stop with some speed.
-	if absf(rotation.y) < closed_angle_epsilon and speed > slam_speed_threshold and _slam_cooldown <= 0.0:
-		_play_slam()
-		return
 
+func _update_creak(speed: float) -> void:
 	if _sound == null:
 		return
 	if speed > creak_idle_speed:
