@@ -16,6 +16,7 @@ extends RigidBody3D
 @export var open_speed: float = 1.1           ## rad/s motor target — the slow, heavy travel
 @export var motor_max_impulse: float = 6.0    ## motor strength; lower = heavier / slower to start
 @export var limit_epsilon: float = 0.02       ## rad; stop pushing this close to a limit (no jitter)
+@export var approach_zone: float = 0.45       ## rad before a limit where the motor eases off (no bounce)
 
 @export_group("Handle")
 @export var handle_node_hint: String = "Handles"
@@ -33,7 +34,7 @@ extends RigidBody3D
 @export var creak_speed_for_max: float = 1.5  ## leaf speed (rad/s) mapped to loudest/highest
 @export var creak_idle_speed: float = 0.08    ## below this the creak stops
 @export var slam_clip_start: float = 4.0      ## seconds into the clip for the close/latch
-@export var slam_speed_threshold: float = 0.6 ## leaf speed (rad/s) into the closed stop = latch
+@export var slam_speed_threshold: float = 0.15 ## leaf speed (rad/s) into the closed stop = latch
 @export var closed_angle_epsilon: float = 0.08 ## rad; how close to 0 counts as "closed"
 
 var _operating: bool = false
@@ -115,14 +116,17 @@ func _physics_process(delta: float) -> void:
 	if _slam_cooldown > 0.0:
 		_slam_cooldown -= delta
 
-	# Stop the motor pushing once we've reached the target end, so it doesn't
-	# grind and shake against the hard limit.
+	# Ease the motor down as the leaf nears its target end, so it arrives gently
+	# instead of slamming the hard limit and bouncing back. Same for both ways.
 	if _operating and _hinge != null:
 		var open_rad := deg_to_rad(open_angle_degrees)
-		var reached_open := _operate_dir < 0.0 and rotation.y <= -open_rad + limit_epsilon
-		var reached_closed := _operate_dir > 0.0 and rotation.y >= -limit_epsilon
-		if reached_open or reached_closed:
+		var target_ang := -open_rad if _operate_dir < 0.0 else 0.0
+		var remaining := absf(target_ang - rotation.y)
+		if remaining <= limit_epsilon:
 			_hinge.set("motor/enable", false)
+		else:
+			var speed_scale := clampf(remaining / approach_zone, 0.18, 1.0)
+			_hinge.set("motor/target_velocity", _operate_dir * open_speed * speed_scale)
 
 	var speed := absf(angular_velocity.y)
 
