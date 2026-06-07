@@ -83,3 +83,10 @@ tuning beyond enabling moon shadows, clouds, blue-hour refinement.
   brightness) is verified by the user in-engine across day and night; colours,
   star density, moon size, and ambient contribution tuned from their feedback
   (cannot be seen headless — no screenshot of the running game).
+
+**Verified 2026-06-07:** Day sky + moving sun, night stars/Milky Way/moon, real
+moonlight all working; no load/shader errors. Follow-up fixes during verification:
+forced ambient to Color (was tinting rooms blue from the sky), added an interior
+ReflectionProbe + a ground colour below the horizon (killed blue specular on dark
+furniture), daylight-faded warm fills for the lower furniture, and an economical
+probe re-bake (only on daylight shifts) so nights stay dark with no per-frame cost.
