@@ -17,10 +17,14 @@ extends DirectionalLight3D
 @export var moon_light_path: NodePath
 @export var max_moon_energy := 0.18
 @export var moon_color := Color(0.6, 0.7, 1.0, 1.0)
+@export var reflection_probe_path: NodePath
 
 var _environment: Environment
 var _sky_material: ShaderMaterial
 var _moon: DirectionalLight3D
+var _probe: ReflectionProbe
+var _probe_baked := -1.0
+var _probe_pulse := 0
 var _window_lights: Array[OmniLight3D] = []
 var _window_beam: SpotLight3D
 var _daylight_mats: Array[StandardMaterial3D] = []
@@ -44,6 +48,7 @@ func _resolve_targets() -> void:
 	if _environment != null and _environment.sky != null:
 		_sky_material = _environment.sky.sky_material as ShaderMaterial
 	_moon = get_node_or_null(moon_light_path) as DirectionalLight3D
+	_probe = get_node_or_null(reflection_probe_path) as ReflectionProbe
 
 	_resolve_window_lights()
 	_resolve_extra_window_lights()
@@ -137,6 +142,18 @@ func _apply_time_of_day() -> void:
 
 	for i in _extra_window_lights.size():
 		_extra_window_lights[i].light_energy = _extra_window_base[i] * daylight
+
+	# Re-bake the reflection probe only when the daylight level shifts (dawn/dusk),
+	# then leave it static — cheap, but it still goes dark by night.
+	if _probe != null:
+		if _probe_pulse > 0:
+			_probe_pulse -= 1
+			if _probe_pulse == 0:
+				_probe.update_mode = ReflectionProbe.UPDATE_ONCE
+		if absf(daylight - _probe_baked) > 0.03:
+			_probe_baked = daylight
+			_probe.update_mode = ReflectionProbe.UPDATE_ALWAYS  # capture fresh frames
+			_probe_pulse = 3
 
 	if _environment != null:
 		_environment.ambient_light_color = _ambient_color(daylight, color)

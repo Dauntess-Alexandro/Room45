@@ -679,6 +679,7 @@ window_beam_path = NodePath("../WindowSunBeam")
 daylight_mesh_path = NodePath("../Furniture/Balcony/Daylight")
 extra_window_light_paths = Array[NodePath]([NodePath("../Zal/ZalLights/WindowFill"), NodePath("../WarmFill")])
 moon_light_path = NodePath("../Moon")
+reflection_probe_path = NodePath("../RoomReflection")
 
 [node name="WindowSunBeam" type="SpotLight3D" parent="." unique_id=2036001154]
 transform = Transform3D(1, 0, 0, 0, 0.81915206, -0.57357645, 0, 0.57357645, 0.81915206, 0, 1.7, -1.98)
@@ -697,7 +698,7 @@ shadow_enabled = true
 
 [node name="RoomReflection" type="ReflectionProbe" parent="." unique_id=1753937624]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1.2878103, 2.5)
-update_mode = 1
+update_mode = 0
 ambient_mode = 0
 blend_distance = 0.56
 size = Vector3(11, 3.2, 13)
