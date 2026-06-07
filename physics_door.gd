@@ -16,6 +16,7 @@ extends RigidBody3D
 @export var open_speed: float = 1.1           ## rad/s motor target — the slow, heavy travel
 @export var motor_max_impulse: float = 6.0    ## motor strength; lower = heavier / slower to start
 @export var limit_epsilon: float = 0.01       ## rad; stop this short of the hard limit (no bounce)
+@export var operate_deadzone: float = 0.06    ## rad; if already this close to an end, the button does nothing
 @export var approach_zone: float = 0.45       ## rad before a limit where the motor eases off (no bounce)
 
 @export_group("Handle")
@@ -84,12 +85,13 @@ func get_prompt() -> String:
 func grab_begin(by: Node = null, opening: bool = true) -> bool:
 	if _hinge == null:
 		return false
-	# Already at the end we'd drive toward? Do nothing.
+	# Already (near) the end we'd drive toward? Do nothing — this is what makes
+	# RMB on a shut door / LMB on a fully open one inert, with no bounce.
 	var open_rad := deg_to_rad(open_angle_degrees)
 	var ang := absf(rotation.y)
-	if opening and ang >= open_rad - limit_epsilon:
+	if opening and ang >= open_rad - operate_deadzone:
 		return false
-	if not opening and ang <= limit_epsilon:
+	if not opening and ang <= operate_deadzone:
 		return false
 	# Open is the hinge's lower limit; -target_velocity drives there, + back to 0.
 	_operate_dir = -1.0 if opening else 1.0
