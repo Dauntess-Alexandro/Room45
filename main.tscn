@@ -58,6 +58,7 @@ sky_material = SubResource("SkyMat")
 [sub_resource type="Environment" id="Env"]
 background_mode = 2
 sky = SubResource("SkyRes")
+ambient_light_source = 2
 ambient_light_color = Color(0.28, 0.29, 0.32, 1)
 ambient_light_sky_contribution = 0.0
 ambient_light_energy = 0.45
