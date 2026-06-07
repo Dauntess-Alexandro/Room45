@@ -118,8 +118,10 @@ func _physics_process(delta: float) -> void:
 
 	if _operating and _hinge != null:
 		var open_rad := deg_to_rad(open_angle_degrees)
-		var target_ang := -open_rad if _operate_dir < 0.0 else 0.0
-		var remaining := absf(target_ang - rotation.y)
+		# Sign-agnostic distance to the target end: |angle| is 0 closed, open_rad
+		# fully open, whichever way the hinge measures rotation.
+		var ang_abs := absf(rotation.y)
+		var remaining := (open_rad - ang_abs) if _operate_dir < 0.0 else ang_abs
 		if remaining <= limit_epsilon:
 			# Stop JUST short of the hard limit and kill the momentum, so the leaf
 			# never touches the springy joint stop — nothing to bounce off.
