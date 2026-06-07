@@ -16,6 +16,7 @@ uniform float sun_size : hint_range(0.0, 0.2) = 0.015;
 uniform float moon_size : hint_range(0.0, 0.2) = 0.030;
 uniform float star_amount : hint_range(0.9, 1.0) = 0.985; // higher = fewer stars
 uniform float milky_way_strength : hint_range(0.0, 1.0) = 0.6;
+uniform vec3 ground_color : source_color = vec3(0.10, 0.09, 0.08); // below the horizon
 
 float hash13(vec3 p3) {
 	p3 = fract(p3 * 0.1031);
@@ -56,5 +57,11 @@ void sky() {
 	float moon_glow = pow(max(md, 0.0), 180.0) * 0.4;
 	night += moon_color * (moon_disk * 3.0 + moon_glow);
 
-	COLOR = mix(night, day, daylight);
+	vec3 sky_col = mix(night, day, daylight);
+
+	// Below the horizon, show ground (darker at night), not blue sky — so
+	// downward reflections on objects read neutral, never blue.
+	vec3 ground = ground_color * (0.25 + 0.75 * daylight);
+	float horizon = smoothstep(-0.03, 0.04, dir.y);
+	COLOR = mix(ground, sky_col, horizon);
 }
