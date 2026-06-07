@@ -36,5 +36,5 @@ transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0)
 node_a = NodePath("../DoorLeaf")
 node_b = NodePath("")
 angular_limit/enable = true
-angular_limit/lower = -1.658
-angular_limit/upper = 0.0
+angular_limit/lower = -1.75
+angular_limit/upper = 0.1

@@ -123,12 +123,15 @@ func _physics_process(delta: float) -> void:
 		var ang_abs := absf(rotation.y)
 		var remaining := (open_rad - ang_abs) if _operate_dir < 0.0 else ang_abs
 		if remaining <= limit_epsilon:
-			# Stop JUST short of the hard limit and kill the momentum, so the leaf
-			# never touches the springy joint stop — nothing to bounce off.
-			angular_velocity = Vector3.ZERO
+			# Stop inside the (widened) hard limits and kill the momentum, so the
+			# leaf never touches the springy joint stop — nothing to bounce off.
 			_hinge.set("motor/enable", false)
+			angular_velocity = Vector3.ZERO
 			if _operate_dir > 0.0:
-				_play_slam()   # latch click on a full close
+				# Snap flush shut and latch at the moment it closes.
+				rotation = Vector3.ZERO
+				angular_velocity = Vector3.ZERO
+				_play_slam()
 			_operating = false
 		else:
 			# Ease the motor down near the end so it arrives gently. Same both ways.
