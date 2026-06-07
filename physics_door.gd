@@ -41,7 +41,6 @@ extends RigidBody3D
 var _operating: bool = false
 var _operate_dir: float = 0.0   ## -1 = opening (toward lower limit), +1 = closing (toward 0)
 var _hinge: HingeJoint3D
-var _excepted: PhysicsBody3D
 var _handle_node: Node3D
 var _handle_rest_basis: Basis
 var _handle_captured: bool = false
@@ -82,7 +81,7 @@ func get_prompt() -> String:
 ## opening = true drives toward the open limit, false drives toward closed.
 ## Returns true if it actually engaged; false if the door is already at that end
 ## (so the caller shouldn't enter grab mode — e.g. RMB on an already-shut door).
-func grab_begin(by: Node = null, opening: bool = true) -> bool:
+func grab_begin(_by: Node = null, opening: bool = true) -> bool:
 	if _hinge == null:
 		return false
 	# Already (near) the end we'd drive toward? Do nothing — this is what makes
@@ -96,11 +95,6 @@ func grab_begin(by: Node = null, opening: bool = true) -> bool:
 	# Open is the hinge's lower limit; -target_velocity drives there, + back to 0.
 	_operate_dir = -1.0 if opening else 1.0
 	_operating = true
-	# Once the player has grabbed the door, stop it colliding with them for good —
-	# re-enabling mid-overlap would punt the door (and the player) on release.
-	if by is PhysicsBody3D and _excepted == null:
-		_excepted = by
-		add_collision_exception_with(by)
 	_hinge.set("motor/max_impulse", motor_max_impulse)
 	_hinge.set("motor/target_velocity", _operate_dir * open_speed)
 	_hinge.set("motor/enable", true)
