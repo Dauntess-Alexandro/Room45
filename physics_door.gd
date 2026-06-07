@@ -57,6 +57,8 @@ func _ready() -> void:
 		_hinge.set("motor/target_velocity", 0.0)
 		_hinge.set("motor/max_impulse", motor_max_impulse)
 		_hinge.set("motor/enable", false)
+	# Start closed and locked solid (no drift), so the leaf sits flush in the frame.
+	freeze = true
 	_sound = get_node_or_null(sound_player_path) as AudioStreamPlayer3D
 	if _sound != null:
 		_sound_base_db = _sound.volume_db
@@ -95,6 +97,7 @@ func grab_begin(_by: Node = null, opening: bool = true) -> bool:
 	# Open is the hinge's lower limit; -target_velocity drives there, + back to 0.
 	_operate_dir = -1.0 if opening else 1.0
 	_operating = true
+	freeze = false   # unlock so the motor can move it
 	_hinge.set("motor/max_impulse", motor_max_impulse)
 	_hinge.set("motor/target_velocity", _operate_dir * open_speed)
 	_hinge.set("motor/enable", true)
@@ -121,15 +124,14 @@ func _physics_process(delta: float) -> void:
 		var ang_abs := absf(rotation.y)
 		var remaining := (open_rad - ang_abs) if _operate_dir < 0.0 else ang_abs
 		if remaining <= limit_epsilon:
-			# Stop inside the (widened) hard limits and kill the momentum, so the
-			# leaf never touches the springy joint stop — nothing to bounce off.
+			# Reached the end: kill momentum and lock the leaf solid so it can't
+			# drift (sits flush). On a full close, snap to 0 and latch.
 			_hinge.set("motor/enable", false)
 			angular_velocity = Vector3.ZERO
 			if _operate_dir > 0.0:
-				# Snap flush shut and latch at the moment it closes.
 				rotation = Vector3.ZERO
-				angular_velocity = Vector3.ZERO
 				_play_slam()
+			freeze = true
 			_operating = false
 		else:
 			# Ease the motor down near the end so it arrives gently. Same both ways.
