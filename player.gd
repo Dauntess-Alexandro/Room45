@@ -177,14 +177,16 @@ func _update_interaction() -> void:
 
 	# Grabbable door: hold LMB to open, RMB to close. Everything else: tap [E].
 	if _current_target.has_method("is_grabbable") and _current_target.is_grabbable():
+		# Only enter grab mode if the door can actually move that way (so RMB on a
+		# shut door / LMB on a fully open one simply does nothing).
 		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-			_grab_button = MOUSE_BUTTON_LEFT
-			_grabbed_door = _current_target
-			_grabbed_door.grab_begin(self, true)
+			if _current_target.grab_begin(self, true):
+				_grab_button = MOUSE_BUTTON_LEFT
+				_grabbed_door = _current_target
 		elif Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
-			_grab_button = MOUSE_BUTTON_RIGHT
-			_grabbed_door = _current_target
-			_grabbed_door.grab_begin(self, false)
+			if _current_target.grab_begin(self, false):
+				_grab_button = MOUSE_BUTTON_RIGHT
+				_grabbed_door = _current_target
 	elif Input.is_action_just_pressed("interact"):
 		_current_target.interact(self)
 		# Pickups free themselves; drop the stale reference and hide the prompt.

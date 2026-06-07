@@ -79,17 +79,18 @@ func get_prompt() -> String:
 
 
 ## opening = true drives toward the open limit, false drives toward closed.
-func grab_begin(by: Node = null, opening: bool = true) -> void:
+## Returns true if it actually engaged; false if the door is already at that end
+## (so the caller shouldn't enter grab mode — e.g. RMB on an already-shut door).
+func grab_begin(by: Node = null, opening: bool = true) -> bool:
 	if _hinge == null:
-		return
-	# If the door is already at the end we'd drive toward, do nothing — re-pushing
-	# into a hard limit just bounces it back (looks like it starts closing).
+		return false
+	# Already at the end we'd drive toward? Do nothing.
 	var open_rad := deg_to_rad(open_angle_degrees)
 	var ang := absf(rotation.y)
 	if opening and ang >= open_rad - limit_epsilon:
-		return
+		return false
 	if not opening and ang <= limit_epsilon:
-		return
+		return false
 	# Open is the hinge's lower limit; -target_velocity drives there, + back to 0.
 	_operate_dir = -1.0 if opening else 1.0
 	_operating = true
@@ -102,6 +103,7 @@ func grab_begin(by: Node = null, opening: bool = true) -> void:
 	_hinge.set("motor/target_velocity", _operate_dir * open_speed)
 	_hinge.set("motor/enable", true)
 	_tween_handle(handle_press_degrees)
+	return true
 
 
 func grab_end() -> void:
