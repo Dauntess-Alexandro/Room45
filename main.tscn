@@ -655,6 +655,7 @@ world_environment_path = NodePath("../WorldEnvironment")
 window_light_path = NodePath("../WindowLight")
 window_beam_path = NodePath("../WindowSunBeam")
 daylight_mesh_path = NodePath("../Furniture/Balcony/Daylight")
+extra_window_light_paths = Array[NodePath]([NodePath("../Zal/ZalLights/WindowFill")])
 
 [node name="WindowSunBeam" type="SpotLight3D" parent="." unique_id=2036001154]
 transform = Transform3D(1, 0, 0, 0, 0.81915206, -0.57357645, 0, 0.57357645, 0.81915206, 0, 1.7, -1.98)

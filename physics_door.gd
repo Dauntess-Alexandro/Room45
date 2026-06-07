@@ -13,8 +13,8 @@ extends RigidBody3D
 
 @export_group("Open / Close")
 @export var open_angle_degrees: float = 95.0  ## must match the hinge open limit
-@export var open_speed: float = 1.1           ## rad/s motor target — the slow, heavy travel
-@export var motor_max_impulse: float = 6.0    ## motor strength; lower = heavier / slower to start
+@export var open_speed: float = 1.45          ## rad/s motor target — the slow, heavy travel
+@export var motor_max_impulse: float = 9.0    ## motor strength; lower = heavier / slower to start
 @export var limit_epsilon: float = 0.01       ## rad; stop this short of the hard limit (no bounce)
 @export var operate_deadzone: float = 0.06    ## rad; if already this close to an end, the button does nothing
 @export var approach_zone: float = 0.45       ## rad before a limit where the motor eases off (no bounce)

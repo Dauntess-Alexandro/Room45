@@ -4,6 +4,8 @@ extends DirectionalLight3D
 @export var window_light_path: NodePath
 @export var window_beam_path: NodePath
 @export var daylight_mesh_path: NodePath
+## Extra window-fill lights (e.g. another room's) dimmed straight with daylight.
+@export var extra_window_light_paths: Array[NodePath] = []
 
 @export var sunrise_hour := 6.0
 @export var sunset_hour := 20.5
@@ -16,6 +18,8 @@ var _environment: Environment
 var _window_lights: Array[OmniLight3D] = []
 var _window_beam: SpotLight3D
 var _daylight_mats: Array[StandardMaterial3D] = []
+var _extra_window_lights: Array[OmniLight3D] = []
+var _extra_window_base: Array[float] = []
 
 
 func _ready() -> void:
@@ -33,20 +37,36 @@ func _resolve_targets() -> void:
 		_environment = world.environment
 
 	_resolve_window_lights()
+	_resolve_extra_window_lights()
 	_window_beam = get_node_or_null(window_beam_path) as SpotLight3D
 	_resolve_daylight_meshes()
 
 
 func _resolve_daylight_meshes() -> void:
+	# Dim every "*Daylight" panel in the scene (both rooms), not just one room's.
 	_daylight_mats.clear()
-	var daylight := get_node_or_null(daylight_mesh_path) as MeshInstance3D
-	if daylight != null:
-		_prepare_daylight_mesh(daylight)
-		var parent := daylight.get_parent()
-		if parent != null:
-			for sibling in parent.find_children("*Daylight", "MeshInstance3D", false, false):
-				if sibling != daylight:
-					_prepare_daylight_mesh(sibling as MeshInstance3D)
+	var root: Node = get_tree().current_scene if get_tree() != null else null
+	if root == null:
+		root = get_parent()
+	if root == null:
+		return
+	for node in root.find_children("*Daylight", "MeshInstance3D", true, false):
+		_prepare_daylight_mesh(node as MeshInstance3D)
+
+
+func _resolve_extra_window_lights() -> void:
+	_extra_window_lights.clear()
+	_extra_window_base.clear()
+	for path in extra_window_light_paths:
+		var target := get_node_or_null(path)
+		if target == null:
+			continue
+		if target is OmniLight3D:
+			_extra_window_lights.append(target)
+			_extra_window_base.append((target as OmniLight3D).light_energy)
+		for child in target.find_children("*", "OmniLight3D", true, false):
+			_extra_window_lights.append(child as OmniLight3D)
+			_extra_window_base.append((child as OmniLight3D).light_energy)
 
 
 func _prepare_daylight_mesh(daylight: MeshInstance3D) -> void:
@@ -88,6 +108,9 @@ func _apply_time_of_day() -> void:
 		_window_beam.light_energy = max_beam_energy * daylight * pow(maxf(height, 0.0), 0.55)
 		_window_beam.shadow_enabled = _window_beam.light_energy > 0.05
 		_window_beam.look_at(_window_beam.global_position + ray_dir, Vector3.UP)
+
+	for i in _extra_window_lights.size():
+		_extra_window_lights[i].light_energy = _extra_window_base[i] * daylight
 
 	if _environment != null:
 		_environment.ambient_light_color = _ambient_color(daylight, color)
