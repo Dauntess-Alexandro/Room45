@@ -62,6 +62,6 @@ void sky() {
 	// Below the horizon, show ground (darker at night), not blue sky — so
 	// downward reflections on objects read neutral, never blue.
 	vec3 ground = ground_color * (0.25 + 0.75 * daylight);
-	float horizon = smoothstep(-0.03, 0.04, dir.y);
+	float horizon = smoothstep(0.0, 0.12, dir.y);
 	COLOR = mix(ground, sky_col, horizon);
 }
