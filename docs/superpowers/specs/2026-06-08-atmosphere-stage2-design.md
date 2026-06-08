@@ -77,3 +77,8 @@ volumetric setup.
   haze, golden sunrise/sunset, dark night) verified by the user in-engine across day
   and night; glow threshold, fog density/colour, and volumetric density tuned from
   feedback and for fps (cannot be seen headless).
+
+**Verified 2026-06-08:** Glow on emitters, daytime room reads well, indoor haze
+reduced to non-intrusive, god-rays present (faint at noon by design, stronger at
+low sun), night stays dark, fps fine. Tuning applied: glow threshold 0.95, depth
+fog density 0.004, volumetric anisotropy 0.7, sun/beam volumetric energy 2.0/5.0.
