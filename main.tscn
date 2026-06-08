@@ -48,6 +48,7 @@
 [ext_resource type="PackedScene" uid="uid://c3a8hgy1hrcjb" path="res://models/door_frame_between_rooms.glb" id="38_doorframe"]
 [ext_resource type="PackedScene" path="res://models/simple_wood_door.tscn" id="39_simpledoor"]
 [ext_resource type="Shader" uid="uid://8q1cd242ux0r" path="res://sky.gdshader" id="40_sky"]
+[ext_resource type="Script" path="res://chandelier_glow.gd" id="41_chglow"]
 
 [sub_resource type="ShaderMaterial" id="SkyMat"]
 shader = ExtResource("40_sky")
@@ -539,6 +540,8 @@ transform = Transform3D(0.55, 0, 0, 0, 0.55, 0, 0, 0, 0.55, 2, 0.006, 5.0687)
 
 [node name="ZalOsgonaChandelier" parent="Zal" unique_id=1498684792 instance=ExtResource("33_osgona")]
 transform = Transform3D(0.001, 0, 0, 0, 0.001, 0, 0, 0, 0.001, 2, 2.248, 5)
+script = ExtResource("41_chglow")
+lights_path = NodePath(".")
 
 [node name="BulbLightN" type="OmniLight3D" parent="Zal/ZalOsgonaChandelier" unique_id=154523643]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 39.925, 301.729)
@@ -913,6 +916,8 @@ transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0.07683116, 0.016427
 
 [node name="Chandelier" parent="Furniture" unique_id=885804165 instance=ExtResource("14_seu75")]
 transform = Transform3D(0.27195227, 0, 0, 0, 0.27195227, 0, 0, 0, 0.27195227, 0.1702919, 0.03604878, 0.27161285)
+script = ExtResource("41_chglow")
+lights_path = NodePath("../../ChandelierLights")
 
 [node name="WorldMap" type="MeshInstance3D" parent="Furniture" unique_id=1874604425]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 1.295, 1.78, -0.7)
