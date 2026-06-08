@@ -640,36 +640,41 @@ omni_attenuation = 0.35
 [node name="Bulb1" type="OmniLight3D" parent="ChandelierLights" unique_id=1192873795]
 transform = Transform3D(0.6740188, 0.7387142, 0, -0.7387142, 0.6740188, 0, 0, 0, 1, 0.24640173, 2.2786655, -0.017546654)
 light_color = Color(1, 0.86, 0.66, 1)
-light_energy = 1.1
+light_energy = 0.0
 shadow_enabled = true
 omni_range = 4.0
+metadata/saved_energy = 1.1
 
 [node name="Bulb2" type="OmniLight3D" parent="ChandelierLights" unique_id=876039548]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.015648782, 2.2954292, -0.25008714)
 light_color = Color(1, 0.86, 0.66, 1)
-light_energy = 1.1
+light_energy = 0.0
 shadow_enabled = true
 omni_range = 4.0
+metadata/saved_energy = 1.1
 
 [node name="Bulb3" type="OmniLight3D" parent="ChandelierLights" unique_id=1249407302]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0013163388, 2.3009505, 0.23833421)
 light_color = Color(1, 0.86, 0.66, 1)
-light_energy = 1.1
+light_energy = 0.0
 shadow_enabled = true
 omni_range = 4.0
+metadata/saved_energy = 1.1
 
 [node name="Bulb4" type="OmniLight3D" parent="ChandelierLights" unique_id=1522410812]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2258189, 2.2912452, -0.017102474)
 light_color = Color(1, 0.86, 0.66, 1)
-light_energy = 1.1
+light_energy = 0.0
 shadow_enabled = true
 omni_range = 4.0
+metadata/saved_energy = 1.1
 
 [node name="Bulb5" type="OmniLight3D" parent="ChandelierLights" unique_id=810171662]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25353232, 2.1344736, 1.0469304)
 light_color = Color(1, 0.86, 0.66, 1)
-light_energy = 0.507
+light_energy = 0.0
 omni_range = 4.0
+metadata/saved_energy = 0.507
 
 [node name="WindowLight" type="Node3D" parent="." unique_id=1956907168]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -2)
