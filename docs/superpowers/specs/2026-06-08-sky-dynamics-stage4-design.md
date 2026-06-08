@@ -80,3 +80,6 @@ Volumetric/3D clouds, clouds dimming the sun (room light), weather/rain, aurora.
   hour reads at dusk/dawn, the moon shows a phase, rare shooting stars appear at
   night, day still bright and night still dark. Coverage, speed, twilight strength,
   phase, and star rate tuned from feedback (cannot be seen headless).
+
+**Verified 2026-06-08:** Clouds drift and read well, sunset/blue-hour and moon phase
+work, day bright + night dark, no errors — user approved at default tuning.
