@@ -18,6 +18,9 @@ extends DirectionalLight3D
 @export var max_moon_energy := 0.18
 @export var moon_color := Color(0.6, 0.7, 1.0, 1.0)
 @export var reflection_probe_path: NodePath
+@export var fog_day_color := Color(0.62, 0.68, 0.80, 1.0)
+@export var fog_night_color := Color(0.05, 0.07, 0.13, 1.0)
+@export var fog_sunset_color := Color(0.85, 0.50, 0.30, 1.0)
 
 var _environment: Environment
 var _sky_material: ShaderMaterial
@@ -101,7 +104,7 @@ func _apply_time_of_day() -> void:
 	var daylight := _daylight_amount(hour)
 	var day_t := clampf((hour - sunrise_hour) / maxf(sunset_hour - sunrise_hour, 0.001), 0.0, 1.0)
 	var height := sin(day_t * PI) * daylight
-	var horizon_warmth := pow(clampf(1.0 - height, 0.0, 1.0), 1.2)
+	var horizon_warmth := pow(clampf(1.0 - height, 0.0, 1.0), 0.85)
 	var color := _sun_color(day_t, horizon_warmth, daylight)
 	var ray_dir := _sun_ray_direction(day_t, height)
 
@@ -159,6 +162,7 @@ func _apply_time_of_day() -> void:
 		_environment.ambient_light_color = _ambient_color(daylight, color)
 		_environment.ambient_light_energy = lerpf(0.08, 0.5, daylight)
 		_environment.background_color = _background_color(daylight, day_t, horizon_warmth)
+		_environment.fog_light_color = _fog_color(daylight, horizon_warmth)
 
 	if not _daylight_mats.is_empty():
 		var alpha := lerpf(0.05, 0.72, daylight)
@@ -205,11 +209,16 @@ func _sun_ray_direction(day_t: float, height: float) -> Vector3:
 
 func _sun_color(day_t: float, horizon_warmth: float, daylight: float) -> Color:
 	var day := Color(1.0, 0.92, 0.78, 1.0)
-	var dawn := Color(1.0, 0.55, 0.46, 1.0)
-	var dusk := Color(1.0, 0.45, 0.18, 1.0)
+	var dawn := Color(1.0, 0.50, 0.38, 1.0)
+	var dusk := Color(1.0, 0.38, 0.14, 1.0)
 	var horizon := dawn if day_t < 0.5 else dusk
 	var sun := day.lerp(horizon, horizon_warmth)
 	return Color(0.2, 0.25, 0.45, 1.0).lerp(sun, daylight)
+
+
+func _fog_color(daylight: float, horizon_warmth: float) -> Color:
+	var base := fog_night_color.lerp(fog_day_color, daylight)
+	return base.lerp(fog_sunset_color, horizon_warmth * 0.5 * daylight)
 
 
 func _ambient_color(daylight: float, sun_color: Color) -> Color:
