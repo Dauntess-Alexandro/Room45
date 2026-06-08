@@ -116,6 +116,15 @@ func _apply_time_of_day() -> void:
 	if _sky_material != null:
 		_sky_material.set_shader_parameter("sun_dir", -ray_dir)
 		_sky_material.set_shader_parameter("daylight", daylight)
+		# Clouds take the sun's colour so they warm up at sunrise/sunset.
+		_sky_material.set_shader_parameter("cloud_tint", color)
+		# Blue hour: peaks when the sun is just below the daytime threshold.
+		var twilight := clampf(1.0 - absf(daylight - 0.22) / 0.22, 0.0, 1.0)
+		_sky_material.set_shader_parameter("twilight", twilight)
+		# Moon phase advances across in-game days (~29.5-day cycle).
+		var dt := GameClock.get_datetime()
+		var day_idx := float(dt.get("day", 0))
+		_sky_material.set_shader_parameter("moon_phase", fposmod(day_idx / 29.5, 1.0))
 
 	# Moon: rises at nightfall, sweeps the opposite side, sets by sunrise.
 	var night_amt := 1.0 - daylight
