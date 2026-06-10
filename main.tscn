@@ -48,17 +48,28 @@
 [ext_resource type="PackedScene" uid="uid://c3a8hgy1hrcjb" path="res://models/door_frame_between_rooms.glb" id="38_doorframe"]
 [ext_resource type="PackedScene" path="res://models/simple_wood_door.tscn" id="39_simpledoor"]
 [ext_resource type="Shader" uid="uid://8q1cd242ux0r" path="res://sky.gdshader" id="40_sky"]
-[ext_resource type="Script" path="res://chandelier_glow.gd" id="41_chglow"]
+[ext_resource type="Script" uid="uid://dxk3apihr3l4f" path="res://chandelier_glow.gd" id="41_chglow"]
+[ext_resource type="PackedScene" uid="uid://plkx46dl6yka" path="res://models/soviet_old_wardrobe.glb" id="42_ward2"]
+[ext_resource type="PackedScene" uid="uid://dohecltcoa6sl" path="res://models/soviet_old_bedside.glb" id="43_bed"]
+[ext_resource type="PackedScene" uid="uid://r3w1m0r5al6" path="res://models/wall_lamp.glb" id="44_lamp"]
+[ext_resource type="PackedScene" uid="uid://llanb5w67mgk" path="res://models/old_wood_door_free.glb" id="45_olddoor"]
+[ext_resource type="Script" uid="uid://bmhlnc5qjuh8x" path="res://glb_part.gd" id="46_glbpart"]
+[ext_resource type="Script" uid="uid://b366w53d7ugrk" path="res://physics_door.gd" id="47_physdoor"]
+[ext_resource type="AudioStream" uid="uid://d3k5kob4xnbgg" path="res://sound/woodendoor.mp3" id="48_doorsnd"]
 
 [sub_resource type="ShaderMaterial" id="SkyMat"]
 shader = ExtResource("40_sky")
 shader_parameter/sun_dir = Vector3(0, 0.3, 1)
 shader_parameter/moon_dir = Vector3(0, 0.3, -1)
 shader_parameter/daylight = 1.0
+shader_parameter/twilight = 0.0
+shader_parameter/moon_phase = 0.0
+shader_parameter/cloud_tint = Color(1, 0.6, 0.4, 1)
 shader_parameter/day_zenith = Color(0.17, 0.35, 0.72, 1)
 shader_parameter/day_horizon = Color(0.64, 0.76, 0.93, 1)
 shader_parameter/night_zenith = Color(0.01, 0.015, 0.04, 1)
 shader_parameter/night_horizon = Color(0.03, 0.05, 0.1, 1)
+shader_parameter/twilight_color = Color(0.06, 0.09, 0.22, 1)
 shader_parameter/sun_color = Color(1, 0.95, 0.85, 1)
 shader_parameter/moon_color = Color(0.7, 0.78, 0.95, 1)
 shader_parameter/sun_size = 0.015
@@ -66,6 +77,12 @@ shader_parameter/moon_size = 0.03
 shader_parameter/star_amount = 0.985
 shader_parameter/milky_way_strength = 0.6
 shader_parameter/ground_color = Color(0.1, 0.09, 0.08, 1)
+shader_parameter/cloud_coverage = 0.55
+shader_parameter/cloud_speed = 0.006
+shader_parameter/cloud_opacity = 0.9
+shader_parameter/cloud_day_color = Color(0.92, 0.93, 0.96, 1)
+shader_parameter/cloud_night_color = Color(0.04, 0.05, 0.09, 1)
+shader_parameter/shooting_star_rate = 0.08
 
 [sub_resource type="Sky" id="SkyRes"]
 sky_material = SubResource("SkyMat")
@@ -79,28 +96,24 @@ ambient_light_sky_contribution = 0.0
 ambient_light_energy = 0.45
 tonemap_mode = 2
 glow_enabled = true
+glow_levels/3 = 1.0
+glow_levels/4 = 1.0
+glow_levels/5 = 1.0
 glow_normalized = true
 glow_intensity = 0.5
 glow_strength = 0.9
 glow_bloom = 0.08
-glow_blend_mode = 1
 glow_hdr_threshold = 0.95
-glow_levels/3 = 1.0
-glow_levels/4 = 1.0
-glow_levels/5 = 1.0
 fog_enabled = true
 fog_light_color = Color(0.62, 0.68, 0.8, 1)
-fog_light_energy = 1.0
 fog_density = 0.004
 fog_sky_affect = 0.0
-fog_aerial_perspective = 0.0
 volumetric_fog_enabled = true
 volumetric_fog_density = 0.012
 volumetric_fog_albedo = Color(0.9, 0.9, 0.95, 1)
+volumetric_fog_gi_inject = 0.0
 volumetric_fog_anisotropy = 0.7
 volumetric_fog_length = 32.0
-volumetric_fog_gi_inject = 0.0
-volumetric_fog_ambient_inject = 0.0
 volumetric_fog_sky_affect = 0.0
 
 [sub_resource type="StandardMaterial3D" id="FloorMat"]
@@ -123,6 +136,32 @@ uv1_scale = Vector3(0.8, 0.8, 0.8)
 uv1_triplanar = true
 uv1_world_triplanar = true
 texture_filter = 1
+
+[sub_resource type="StandardMaterial3D" id="DoorBackMat"]
+albedo_color = Color(0.04, 0.04, 0.05, 1)
+texture_filter = 1
+
+[sub_resource type="BoxShape3D" id="WardrobeColShape"]
+size = Vector3(1.0914, 2.0442, 1.1099)
+
+[sub_resource type="BoxShape3D" id="BedsideColShape"]
+size = Vector3(0.5767, 0.7033, 1.2293)
+
+[sub_resource type="BoxShape3D" id="LampColShape"]
+size = Vector3(0.15, 0.2108, 0.2317)
+
+[sub_resource type="StandardMaterial3D" id="LampGlowMat"]
+albedo_color = Color(1, 0.92, 0.78, 1)
+emission_enabled = true
+emission = Color(1, 0.82, 0.55, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="SphereMesh" id="LampGlowSphere"]
+radius = 0.135
+height = 0.27
+
+[sub_resource type="BoxShape3D" id="FrontLeafShape"]
+size = Vector3(0.06, 1.967, 0.767)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e71vb"]
 shading_mode = 0
@@ -164,6 +203,21 @@ size = Vector3(3.87, 0.06, 0.06)
 
 [sub_resource type="BoxMesh" id="ZalWinMullionMesh"]
 size = Vector3(0.05, 1.28, 0.06)
+
+[sub_resource type="BoxShape3D" id="ZalArmchairCol"]
+size = Vector3(1.487, 1.058, 1.403)
+
+[sub_resource type="BoxShape3D" id="ZalWardrobeCol"]
+size = Vector3(1.143, 2.185, 1.327)
+
+[sub_resource type="BoxShape3D" id="ZalTvStandCol"]
+size = Vector3(0.843, 1.608, 1.114)
+
+[sub_resource type="BoxShape3D" id="ZalShelfCol"]
+size = Vector3(0.873, 2.281, 1.822)
+
+[sub_resource type="BoxShape3D" id="ZalSofaCol"]
+size = Vector3(1.174, 0.99, 2.31)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lswn8"]
 albedo_texture = ExtResource("6_d13ii")
@@ -390,8 +444,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.86, 0, 2.35)
 use_collision = true
 
 [node name="Slab" type="CSGBox3D" parent="Zal/WallEast" unique_id=119030622]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.8, 1.35, 5)
-size = Vector3(0.1, 2.7, 5.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.8, 1.35, 4.525)
+size = Vector3(0.1, 2.7, 6.35)
 material = SubResource("WallMat")
 
 [node name="CorridorHole" type="CSGBox3D" parent="Zal/WallEast" unique_id=1217840426]
@@ -399,37 +453,156 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.8, 1.025, 3.5)
 operation = 2
 size = Vector3(0.4, 2.05, 0.95)
 
-[node name="CorridorStub" type="Node3D" parent="Zal" unique_id=747615570]
+[node name="Corridor" type="Node3D" parent="Zal" unique_id=747615570]
 
-[node name="Floor" type="CSGBox3D" parent="Zal/CorridorStub" unique_id=869068255]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.4, -0.05, 3.5)
+[node name="Floor" type="CSGBox3D" parent="Zal/Corridor" unique_id=869068255]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, -0.05, 3.3)
 use_collision = true
-size = Vector3(1.2, 0.1, 1)
+size = Vector3(6.5, 0.1, 3.9)
 material = SubResource("FloorMat")
 
-[node name="Ceiling" type="CSGBox3D" parent="Zal/CorridorStub" unique_id=104364424]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.4, 2.75, 3.5)
+[node name="Ceiling" type="CSGBox3D" parent="Zal/Corridor" unique_id=104364424]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2.75, 3.3)
 use_collision = true
-size = Vector3(1.2, 0.1, 1)
+size = Vector3(6.5, 0.1, 3.9)
 material = SubResource("CeilingMat")
 
-[node name="BackCap" type="CSGBox3D" parent="Zal/CorridorStub" unique_id=2047991374]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.35, 3.5)
+[node name="BackCap" type="CSGCombiner3D" parent="Zal/Corridor" unique_id=2047991374]
 use_collision = true
-size = Vector3(0.1, 2.7, 1)
+
+[node name="Slab" type="CSGBox3D" parent="Zal/Corridor/BackCap" unique_id=976708217]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.25, 1.35, 3.3)
+size = Vector3(0.1, 2.7, 3.9)
 material = SubResource("WallMat")
 
-[node name="SideS" type="CSGBox3D" parent="Zal/CorridorStub" unique_id=308524594]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.4, 1.35, 3)
+[node name="FrontDoorHole" type="CSGBox3D" parent="Zal/Corridor/BackCap" unique_id=1706995826]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.25, 1.025, 2.4)
+operation = 2
+size = Vector3(0.4, 2.05, 0.95)
+
+[node name="SideS" type="CSGBox3D" parent="Zal/Corridor" unique_id=308524594]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.35, 1.35)
 use_collision = true
-size = Vector3(1.2, 2.7, 0.1)
+size = Vector3(6.5, 2.7, 0.1)
 material = SubResource("WallMat")
 
-[node name="SideN" type="CSGBox3D" parent="Zal/CorridorStub" unique_id=3190434]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.4, 1.35, 4)
+[node name="SideN" type="CSGBox3D" parent="Zal/Corridor" unique_id=3190434]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.35, 5.25)
 use_collision = true
-size = Vector3(1.2, 2.7, 0.1)
+size = Vector3(6.5, 2.7, 0.1)
 material = SubResource("WallMat")
+
+[node name="WcDivider" type="CSGBox3D" parent="Zal/Corridor" unique_id=128692713]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.275, 1.35, 3.43)
+use_collision = true
+size = Vector3(1.95, 2.7, 0.1)
+material = SubResource("WallMat")
+
+[node name="WcFront" type="CSGCombiner3D" parent="Zal/Corridor" unique_id=70605099]
+use_collision = true
+
+[node name="Slab" type="CSGBox3D" parent="Zal/Corridor/WcFront" unique_id=1263799044]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 1.35, 4.34)
+size = Vector3(0.1, 2.7, 1.82)
+material = SubResource("WallMat")
+
+[node name="WcDoorHole" type="CSGBox3D" parent="Zal/Corridor/WcFront" unique_id=1441990233]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 1.025, 4.34)
+operation = 2
+size = Vector3(0.4, 2.05, 0.95)
+
+[node name="FrontDoorFrame" type="Node3D" parent="Zal/Corridor" unique_id=488033051]
+transform = Transform3D(0.66, 0, 0, 0, 0.66, 0, 0, 0, 0.66, 11.25, 0, 2.4)
+script = ExtResource("46_glbpart")
+source_scene = ExtResource("45_olddoor")
+keep_names = PackedStringArray("065")
+exclude_names = PackedStringArray()
+part_origin = Vector3(0.05, -2, 25.891)
+
+[node name="FrontDoorLeaf" type="Node3D" parent="Zal/Corridor" unique_id=41855661]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.25, 0, 2.02)
+
+[node name="DoorLeaf" type="RigidBody3D" parent="Zal/Corridor/FrontDoorLeaf"]
+collision_mask = 0
+mass = 18.0
+gravity_scale = 0.0
+angular_damp = 2.5
+can_sleep = false
+script = ExtResource("47_physdoor")
+
+[node name="LeafMesh" type="Node3D" parent="Zal/Corridor/FrontDoorLeaf/DoorLeaf"]
+transform = Transform3D(0.66, 0, 0, 0, 0.66, 0, 0, 0, 0.66, 0, 0, 0.38)
+script = ExtResource("46_glbpart")
+source_scene = ExtResource("45_olddoor")
+exclude_names = PackedStringArray("065")
+part_origin = Vector3(1.05, -2, 25.891)
+
+[node name="Collision" type="CollisionShape3D" parent="Zal/Corridor/FrontDoorLeaf/DoorLeaf"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9835, 0.38)
+shape = SubResource("FrontLeafShape")
+
+[node name="DoorSound" type="AudioStreamPlayer3D" parent="Zal/Corridor/FrontDoorLeaf/DoorLeaf"]
+stream = ExtResource("48_doorsnd")
+unit_size = 2.0
+max_distance = 8.0
+
+[node name="Hinge" type="HingeJoint3D" parent="Zal/Corridor/FrontDoorLeaf"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0)
+node_a = NodePath("../DoorLeaf")
+angular_limit/enable = true
+angular_limit/lower = -1.75
+angular_limit/upper = 0.1
+
+[node name="WcDoorFrame" parent="Zal/Corridor" unique_id=293444873 instance=ExtResource("38_doorframe")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 9.3, 0, 4.34)
+
+[node name="WcDoor" parent="Zal/Corridor" unique_id=1529133447 instance=ExtResource("39_simpledoor")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 9.3, 0, 4.78)
+
+[node name="CorridorWardrobe" parent="Zal/Corridor" unique_id=617282056 instance=ExtResource("42_ward2")]
+transform = Transform3D(-5.2453668e-08, 0, -1.2, 0, 1.2, 0, 1.2, 0, -5.2453668e-08, 6.798909, 0.26921397, 1.7205429)
+
+[node name="Body" type="StaticBody3D" parent="Zal/Corridor/CorridorWardrobe" unique_id=1728227808]
+
+[node name="Col" type="CollisionShape3D" parent="Zal/Corridor/CorridorWardrobe/Body" unique_id=443993952]
+transform = Transform3D(0.99999994, 0, 3.5527137e-15, 0, 0.99999994, 0, -3.5527137e-15, 0, 0.99999994, -0.22170055, 0.76309997, 0)
+shape = SubResource("WardrobeColShape")
+
+[node name="CorridorBedside" parent="Zal/Corridor" unique_id=1415157660 instance=ExtResource("43_bed")]
+transform = Transform3D(1.1924881e-08, 0, -1, 0, 1, 0, 1, 0, 1.1924881e-08, 9.959811, 0.695, 1.7211115)
+
+[node name="Body" type="StaticBody3D" parent="Zal/Corridor/CorridorBedside" unique_id=1429634857]
+
+[node name="Col" type="CollisionShape3D" parent="Zal/Corridor/CorridorBedside/Body" unique_id=683135302]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0034, -0.3436, 0)
+shape = SubResource("BedsideColShape")
+
+[node name="CorridorWallLamp" parent="Zal/Corridor" unique_id=234921922 instance=ExtResource("44_lamp")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 9.635931, 2.261961, 1.5559088)
+
+[node name="Body" type="StaticBody3D" parent="Zal/Corridor/CorridorWallLamp" unique_id=1270316127]
+
+[node name="Col" type="CollisionShape3D" parent="Zal/Corridor/CorridorWallLamp/Body" unique_id=935292558]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0003, 0.0006)
+shape = SubResource("LampColShape")
+
+[node name="CorridorLampLight" type="OmniLight3D" parent="Zal/Corridor" unique_id=1831031451]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.630524, 2.213798, 1.6636086)
+light_color = Color(1, 0.85, 0.62, 1)
+light_energy = 1.444
+omni_range = 3.5
+metadata/saved_energy = 1.0
+
+[node name="LampBulbGlow" type="Node3D" parent="Zal/Corridor" unique_id=1618984314]
+transform = Transform3D(1.1, 0, 0, 0, 1.1, 0, 0, 0, 1.1, 0, 0, 0)
+script = ExtResource("41_chglow")
+lights_path = NodePath("..")
+hide_when_off = true
+
+[node name="Glow" type="MeshInstance3D" parent="Zal/Corridor/LampBulbGlow" unique_id=1892209782]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.763538, 1.9797691, 1.4682329)
+material_override = SubResource("LampGlowMat")
+mesh = SubResource("LampGlowSphere")
 
 [node name="Balcony" type="Node3D" parent="Zal" unique_id=481150561]
 
@@ -506,10 +679,16 @@ transform = Transform3D(-2.1855694e-10, -2.2928226e-17, 0.006, -4.3711387e-10, 0
 transform = Transform3D(-4.3711387e-10, -3.9601417e-17, 0.006, -1.5099579e-09, 0.006, 0, 0.01, 9.0597485e-10, 2.6226832e-10, 2.6012647, 0.9372772, 7.535)
 
 [node name="LivingRoomArmchair" type="Node3D" parent="Zal" unique_id=1230269460]
-transform = Transform3D(0.7629279, 0, 0.64648366, 0, 1, 0, -0.64648366, 0, 0.7629279, -0.056707203, 0.022068262, 6.590718)
+transform = Transform3D(0.7629279, 0, 0.64648366, 0, 1, 0, -0.64648366, 0, 0.7629279, -0.056707203, 0.022068262, 6.7727885)
 script = ExtResource("31_living_part")
 source_names = PackedStringArray("Cube_012")
 part_origin = Vector3(-1.413052, -0.011846, -3.895016)
+
+[node name="Body" type="StaticBody3D" parent="Zal/LivingRoomArmchair" unique_id=699572277]
+
+[node name="Col" type="CollisionShape3D" parent="Zal/LivingRoomArmchair/Body" unique_id=301737972]
+transform = Transform3D(0.8815422, 0, -0.4721046, 0, 1, 0, 0.4721046, 0, 0.8815422, -0.25017452, 0.074293435, -0.31511402)
+shape = SubResource("ZalArmchairCol")
 
 [node name="LivingRoomWardrobe" type="Node3D" parent="Zal" unique_id=1163523331]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1696477, 0.017704606, 5.9843507)
@@ -517,23 +696,48 @@ script = ExtResource("31_living_part")
 source_names = PackedStringArray("Cube_043")
 part_origin = Vector3(1.23192, 0.012294, -0.602055)
 
+[node name="Body" type="StaticBody3D" parent="Zal/LivingRoomWardrobe" unique_id=88261144]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.388103, 0, 0)
+
+[node name="Col" type="CollisionShape3D" parent="Zal/LivingRoomWardrobe/Body" unique_id=1461186421]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.093, 0)
+shape = SubResource("ZalWardrobeCol")
+
 [node name="LivingRoomTvStand" type="Node3D" parent="Zal" unique_id=1499614935]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.311292, 0.013716, 4.707167)
 script = ExtResource("31_living_part")
 source_names = PackedStringArray("SM_TV", "Cylinder_002", "Plane_003", "Cube_013", "Cube_010", "Cube_006", "BezierCurve_001", "BezierCurve")
 part_origin = Vector3(1.418684, 0.00187, -1.937616)
 
+[node name="Body" type="StaticBody3D" parent="Zal/LivingRoomTvStand" unique_id=1778651031]
+
+[node name="Col" type="CollisionShape3D" parent="Zal/LivingRoomTvStand/Body" unique_id=1664294789]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.018, 0.804, 0)
+shape = SubResource("ZalTvStandCol")
+
 [node name="LivingRoomShelf" type="Node3D" parent="Zal" unique_id=1740816288]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.141128, 0.046359207, 2.1645749)
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 8.378812, 0.046359207, 1.8449869)
 script = ExtResource("31_living_part")
 source_names = PackedStringArray("Cube_008")
 part_origin = Vector3(1.318401, 3.8e-05, -3.557133)
 
+[node name="Body" type="StaticBody3D" parent="Zal/LivingRoomShelf" unique_id=1545916919]
+
+[node name="Col" type="CollisionShape3D" parent="Zal/LivingRoomShelf/Body" unique_id=1663911043]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.032752514, 1.14, 0)
+shape = SubResource("ZalShelfCol")
+
 [node name="LivingRoomSofa" type="Node3D" parent="Zal" unique_id=974516827]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.20267498, 0.016382512, 4.8566275)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.20267498, 0.016382512, 4.9140887)
 script = ExtResource("31_living_part")
 source_names = PackedStringArray("Plane_006", "Cube_042", "Cube_005")
 part_origin = Vector3(-1.56278, -0.001863, -1.856035)
+
+[node name="Body" type="StaticBody3D" parent="Zal/LivingRoomSofa" unique_id=1172031721]
+
+[node name="Col" type="CollisionShape3D" parent="Zal/LivingRoomSofa/Body" unique_id=797324521]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0928967, 0.067130566)
+shape = SubResource("ZalSofaCol")
 
 [node name="ZalCarpet" parent="Zal" unique_id=314810617 instance=ExtResource("32_carpet")]
 transform = Transform3D(0.55, 0, 0, 0, 0.55, 0, 0, 0, 0.55, 2, 0.006, 5.0687)
@@ -718,11 +922,11 @@ reflection_probe_path = NodePath("../RoomReflection")
 transform = Transform3D(1, 0, 0, 0, 0.81915206, -0.57357645, 0, 0.57357645, 0.81915206, 0, 1.7, -1.98)
 light_color = Color(1, 0.88, 0.65, 1)
 light_energy = 0.0
+light_volumetric_fog_energy = 5.0
 shadow_enabled = true
 spot_range = 5.2
 spot_angle = 58.0
 spot_angle_attenuation = 0.22
-light_volumetric_fog_energy = 5.0
 
 [node name="Moon" type="DirectionalLight3D" parent="." unique_id=1753937623]
 transform = Transform3D(1, 0, 0, 0, 0.6428, -0.766, 0, 0.766, 0.6428, 0, 3, 0)
@@ -732,12 +936,11 @@ shadow_enabled = true
 
 [node name="RoomReflection" type="ReflectionProbe" parent="." unique_id=1753937624]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1.2878103, 2.5)
-update_mode = 0
-ambient_mode = 0
 blend_distance = 0.56
 size = Vector3(11, 3.2, 13)
 box_projection = true
 interior = true
+ambient_mode = 0
 
 [node name="WarmFill" type="Node3D" parent="." unique_id=1753937625]
 
@@ -756,7 +959,7 @@ omni_range = 6.0
 omni_attenuation = 0.45
 
 [node name="Player" parent="." unique_id=821891331 instance=ExtResource("1_player")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 1.8)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 6, 0.1, 3.3)
 prompt_root_path = NodePath("../UI/InteractionPrompt")
 prompt_label_path = NodePath("../UI/InteractionPrompt/PromptLabel")
 
@@ -995,6 +1198,21 @@ material_override = SubResource("SwitchMat")
 mesh = SubResource("SwitchMesh")
 
 [node name="Collision" type="CollisionShape3D" parent="Interactables/LightSwitch" unique_id=1942662771]
+shape = SubResource("SwitchShape")
+
+[node name="CorridorLampSwitch" type="StaticBody3D" parent="Interactables" unique_id=775897270]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 1.3, 1.43)
+script = ExtResource("2_inter")
+kind = 1
+prompt_text = "TOGGLE LAMP"
+target_light_path = NodePath("../../Zal/Corridor/CorridorLampLight")
+target_light_paths = Array[NodePath]([NodePath("")])
+
+[node name="Mesh" type="MeshInstance3D" parent="Interactables/CorridorLampSwitch" unique_id=1834592424]
+material_override = SubResource("SwitchMat")
+mesh = SubResource("SwitchMesh")
+
+[node name="Collision" type="CollisionShape3D" parent="Interactables/CorridorLampSwitch" unique_id=565937029]
 shape = SubResource("SwitchShape")
 
 [node name="ZalLightSwitch" type="StaticBody3D" parent="Interactables" unique_id=790329340]

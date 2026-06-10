@@ -6,9 +6,13 @@ extends Node3D
 ## the chandelier's OmniLight3D bulbs (use "." if they're children of this node).
 
 @export var lights_path: NodePath
+## When true, the emissive meshes are hidden entirely while the lights are off
+## (so a bare glow sphere disappears and the model's own glass shows instead).
+@export var hide_when_off: bool = false
 
 var _mats: Array[StandardMaterial3D] = []
 var _base_energy: Array[float] = []
+var _meshes: Array[MeshInstance3D] = []
 var _lights: Array[OmniLight3D] = []
 var _was_on: bool = true
 
@@ -33,6 +37,8 @@ func _collect_emissive(mi: MeshInstance3D) -> void:
 			mi.set_surface_override_material(s, dup)
 			_mats.append(dup)
 			_base_energy.append(dup.emission_energy_multiplier)
+			if not _meshes.has(mi):
+				_meshes.append(mi)
 
 
 func _process(_delta: float) -> void:
@@ -52,3 +58,6 @@ func _lights_on() -> bool:
 func _apply(on: bool) -> void:
 	for i in _mats.size():
 		_mats[i].emission_energy_multiplier = _base_energy[i] if on else 0.0
+	if hide_when_off:
+		for mi in _meshes:
+			mi.visible = on
