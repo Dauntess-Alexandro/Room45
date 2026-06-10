@@ -482,11 +482,181 @@ use_collision = true
 size = Vector3(6.5, 2.7, 0.1)
 material = SubResource("WallMat")
 
-[node name="SideN" type="CSGBox3D" parent="Zal/Corridor" unique_id=3190434]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.35, 5.25)
+[node name="SideN" type="CSGCombiner3D" parent="Zal/Corridor" unique_id=3190434]
 use_collision = true
+
+[node name="Slab" type="CSGBox3D" parent="Zal/Corridor/SideN"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.35, 5.25)
 size = Vector3(6.5, 2.7, 0.1)
 material = SubResource("WallMat")
+
+[node name="KitchenPassageHole" type="CSGBox3D" parent="Zal/Corridor/SideN"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.15, 1.025, 5.25)
+operation = 2
+size = Vector3(1.12, 2.05, 0.4)
+
+[node name="KitchenPassageStub" type="Node3D" parent="Zal/Corridor"]
+
+[node name="Floor" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.15, -0.05, 6.515)
+use_collision = true
+size = Vector3(1.22, 0.1, 2.53)
+material = SubResource("FloorMat")
+
+[node name="Ceiling" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.15, 2.75, 6.515)
+use_collision = true
+size = Vector3(1.22, 0.1, 2.53)
+material = SubResource("CeilingMat")
+
+[node name="LeftReveal" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.54, 1.35, 6.515)
+use_collision = true
+size = Vector3(0.1, 2.7, 2.53)
+material = SubResource("WallMat")
+
+[node name="RightReveal" type="CSGCombiner3D" parent="Zal/Corridor/KitchenPassageStub"]
+use_collision = true
+
+[node name="Slab" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/RightReveal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.76, 1.35, 6.515)
+size = Vector3(0.1, 2.7, 2.53)
+material = SubResource("WallMat")
+
+[node name="BathroomDoorHole" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/RightReveal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.76, 1.025, 6.25)
+operation = 2
+size = Vector3(0.4, 2.05, 0.95)
+
+[node name="BathroomRoom" type="Node3D" parent="Zal/Corridor/KitchenPassageStub"]
+
+[node name="Floor" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/BathroomRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.55, -0.05, 6.25)
+use_collision = true
+size = Vector3(1.5, 0.1, 1.35)
+material = SubResource("FloorMat")
+
+[node name="Ceiling" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/BathroomRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.55, 2.75, 6.25)
+use_collision = true
+size = Vector3(1.5, 0.1, 1.35)
+material = SubResource("CeilingMat")
+
+[node name="BackWall" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/BathroomRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.3, 1.35, 6.25)
+use_collision = true
+size = Vector3(0.1, 2.7, 1.35)
+material = SubResource("WallMat")
+
+[node name="NearWall" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/BathroomRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.55, 1.35, 5.575)
+use_collision = true
+size = Vector3(1.5, 2.7, 0.1)
+material = SubResource("WallMat")
+
+[node name="FarWall" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/BathroomRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.55, 1.35, 6.925)
+use_collision = true
+size = Vector3(1.5, 2.7, 0.1)
+material = SubResource("WallMat")
+
+[node name="WasherHint" type="Node3D" parent="Zal/Corridor/KitchenPassageStub/BathroomRoom"]
+
+[node name="Body" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/BathroomRoom/WasherHint"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.95, 0.46, 6.25)
+use_collision = true
+size = Vector3(0.58, 0.92, 0.56)
+material = SubResource("StandardMaterial3D_ruth0")
+
+[node name="DoorGlass" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/BathroomRoom/WasherHint"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.65, 0.42, 6.25)
+size = Vector3(0.018, 0.38, 0.38)
+material = SubResource("StandardMaterial3D_kq58d")
+
+[node name="TubHint" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/BathroomRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.75, 0.28, 6.72)
+use_collision = true
+size = Vector3(0.8, 0.56, 0.32)
+material = SubResource("StandardMaterial3D_ruth0")
+
+[node name="KitchenRoom" type="Node3D" parent="Zal/Corridor/KitchenPassageStub"]
+
+[node name="Floor" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/KitchenRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.25, -0.05, 9.18)
+use_collision = true
+size = Vector3(2.7, 0.1, 2.8)
+material = SubResource("FloorMat")
+
+[node name="Ceiling" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/KitchenRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.25, 2.75, 9.18)
+use_collision = true
+size = Vector3(2.7, 0.1, 2.8)
+material = SubResource("CeilingMat")
+
+[node name="LeftWall" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/KitchenRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.9, 1.35, 9.18)
+use_collision = true
+size = Vector3(0.1, 2.7, 2.8)
+material = SubResource("WallMat")
+
+[node name="RightWall" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/KitchenRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.6, 1.35, 9.18)
+use_collision = true
+size = Vector3(0.1, 2.7, 2.8)
+material = SubResource("WallMat")
+
+[node name="FarWallBottom" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/KitchenRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.25, 0.425, 10.58)
+use_collision = true
+size = Vector3(2.7, 0.85, 0.1)
+material = SubResource("WallMat")
+
+[node name="FarWallTop" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/KitchenRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.25, 2.35, 10.58)
+use_collision = true
+size = Vector3(2.7, 0.8, 0.1)
+material = SubResource("WallMat")
+
+[node name="FarWallLeft" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/KitchenRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.275, 1.45, 10.58)
+use_collision = true
+size = Vector3(0.75, 1.2, 0.1)
+material = SubResource("WallMat")
+
+[node name="FarWallRight" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/KitchenRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.225, 1.45, 10.58)
+use_collision = true
+size = Vector3(0.75, 1.2, 0.1)
+material = SubResource("WallMat")
+
+[node name="WindowGlow" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/KitchenRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.25, 1.45, 10.525)
+size = Vector3(1.2, 1.05, 0.012)
+material = SubResource("StandardMaterial3D_e71vb")
+
+[node name="WindowGlass" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/KitchenRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.25, 1.45, 10.485)
+size = Vector3(1.2, 1.05, 0.015)
+material = SubResource("StandardMaterial3D_vke2r")
+
+[node name="KitchenCounterHint" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/KitchenRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, 0.45, 9.18)
+use_collision = true
+size = Vector3(0.45, 0.9, 1.35)
+material = SubResource("WallMat")
+
+[node name="KitchenTableHint" type="CSGBox3D" parent="Zal/Corridor/KitchenPassageStub/KitchenRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.75, 0.72, 9.48)
+use_collision = true
+size = Vector3(0.85, 0.08, 0.65)
+material = SubResource("FloorMat")
+
+[node name="KitchenWindowFill" type="OmniLight3D" parent="Zal/Corridor/KitchenPassageStub/KitchenRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.25, 1.65, 9.88)
+light_color = Color(0.75, 0.83, 1, 1)
+light_energy = 0.35
+omni_range = 3.2
+omni_attenuation = 0.38
 
 [node name="WcDivider" type="CSGBox3D" parent="Zal/Corridor" unique_id=128692713]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.275, 1.35, 3.43)
@@ -549,12 +719,6 @@ node_a = NodePath("../DoorLeaf")
 angular_limit/enable = true
 angular_limit/upper = 0.1
 angular_limit/lower = -1.75
-
-[node name="WcDoorFrame" parent="Zal/Corridor" unique_id=293444873 instance=ExtResource("38_doorframe")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 9.3, 0, 4.34)
-
-[node name="WcDoor" parent="Zal/Corridor" unique_id=1529133447 instance=ExtResource("39_simpledoor")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 9.3, 0, 4.78)
 
 [node name="CorridorWardrobe" parent="Zal/Corridor" unique_id=617282056 instance=ExtResource("42_ward2")]
 transform = Transform3D(-5.2453668e-08, 0, -1.2, 0, 1.2, 0, 1.2, 0, -5.2453668e-08, 6.798909, 0.26921397, 1.7205429)
